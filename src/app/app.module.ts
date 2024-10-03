@@ -5,10 +5,10 @@ import { configModule } from './modules/config.module';
 import { LoggerMiddleware } from '../common/middlewares/logger.middleware';
 import { RegionModule } from '../region/region.module';
 import { CommonModule } from '../common/common.module';
-import { CategoriesModule } from 'src/categories/categories.module';
+import { CategoryModule } from 'src/category/category.module';
 
 @Module({
-  imports: [configModule, RegionModule, CommonModule, CategoriesModule],
+  imports: [configModule, RegionModule, CommonModule, CategoryModule],
   controllers: [AppController],
   providers: [AppService],
 })

@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/services/prisma.service';
-import { CategoriesData } from './type/categories-data.type';
+import { CategoryData } from './type/category-data.type';
 
 @Injectable()
-export class CategoriesRepository {
+export class CategoryRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAllCategories(): Promise<CategoriesData[]> {
+  async findAllCategories(): Promise<CategoryData[]> {
     return this.prisma.category.findMany({
       select: {
         id: true,
