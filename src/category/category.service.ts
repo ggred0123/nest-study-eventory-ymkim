@@ -8,7 +8,8 @@ export class CategoryService {
   constructor(private readonly categoryRepository: CategoryRepository) {}
 
   async findAllCategories(): Promise<CategoryListDto> {
-    const categories: CategoryData[] = await this.categoryRepository.findAllCategories();
+    const categories: CategoryData[] =
+      await this.categoryRepository.findAllCategories();
 
     return CategoryListDto.from(categories);
   }

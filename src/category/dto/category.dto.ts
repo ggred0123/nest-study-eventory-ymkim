@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { CategoryData } from '../type/category-data.type';
 
-
 export class CategoryDto {
   @ApiProperty({
     description: '카테고리 ID',
