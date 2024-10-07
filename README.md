@@ -27,13 +27,12 @@
         - 호스트
         - 카테고리
         - 지역
-        - 날짜 (1박 이상은 고려하지 않습니다.)
         - 시작 시각
         - 종료 시각
         - 최대 정원 (정원에는 호스트도 포함합니다)
     - 모임은 시작 전/진행 중/종료의 3단계의 상태를 가집니다.
-    - 모임은 시작 전까지만 수정할 수 있습니다.
-    - 모임의 수정/삭제는 호스트만 할 수 있습니다.
+    - 모임의 수정/삭제는 시작 전까지만 호스트에 의해 가능합니다. 단, 참석자를 쫒아낼 수는 없습니다.
+    - 모임 시작 전까지만 참가, 탈퇴가 가능합니다.
 - 리뷰
     - 모임이 끝나면 참여자들은 리뷰를 작성할 수 있습니다.
     - 리뷰는 유저 당 하나만 남길 수 있습니다.
@@ -58,28 +57,33 @@
     - POST /refresh **(Week5)**
 - User
     - GET /me **(Week5-HW)**
-    - GET /:id **(Week5-HW)**
+    - GET /:userId **(Week5-HW)**
 - Event
-    - GET / **(Week2-HW)**
+    - GET / [**(Week2-HW)**](https://github.com/worjs/nest-study-eventory/issues/17)
     - GET /me **(Week5-HW)**
-    - GET /:id **(Week2-HW)**
-    - POST / **(Week2-HW)**
-    - PUT or PATCH /:id **(Week3-HW)**
-    - DELETE /:id **(Week3-HW)**
-    - POST /:id/join **(Week3-HW)**
-    - POST /:id/out **(Week3-HW)**
+    - GET /:eventId [**(Week2-HW)**](https://github.com/worjs/nest-study-eventory/issues/16)
+    - POST / [**(Week2-HW)**](https://github.com/worjs/nest-study-eventory/issues/14)
+    - PUT or PATCH /:eventId **(Week3-HW)**
+    - DELETE /:eventId **(Week3-HW)**
+    - POST /:eventId/join [**(Week2-HW)**](https://github.com/worjs/nest-study-eventory/issues/18)
+    - POST /:eventId/out [**(Week2-HW)**](https://github.com/worjs/nest-study-eventory/issues/19)
 - Review
-    - GET / **(Week2)**
-    - GET /:id **(Week2)**
-    - POST / **(Week2)**
-    - PUT /:id **(Week3)**
-    - PATCH /:id **(Week3)**
-    - DELETE /:id **(Week3)**
+    - GET / [**(Week2)**](https://github.com/worjs/nest-study-eventory/issues/12)
+    - GET /:reviewId [**(Week2)**](https://github.com/worjs/nest-study-eventory/issues/11)
+    - POST / [**(Week2)**](https://github.com/worjs/nest-study-eventory/issues/10)
+    - PUT /:reviewId **(Week3)**
+    - PATCH /:reviewId **(Week3)**
+    - DELETE /:reviewId **(Week3)**
 - Region 
     - GET / [**(Week1)**](https://github.com/worjs/nest-study-eventory/issues/6)
-      **(Week2)**
+      [**(Week2)**](https://github.com/worjs/nest-study-eventory/issues/9)
 - Category 
     - GET / [**(Week1-HW)**](https://github.com/worjs/nest-study-eventory/issues/7)
+
+## 추가 Exercise
+아래는 과제 외로 추가로 구현할만한 과제들입니다. 실제 요구사항이 주어져 코드를 변경해야 하는 상황을 가정합니다.
+- [**모임 생성, 수정, 상세조회 시 더 자세한 정보를 리턴하도록 변경**](https://github.com/worjs/nest-study-eventory/issues/15)
+
 
 ## DB Schema
 아래는 DB 스키마입니다. 역시 변경 가능성이 있습니다.

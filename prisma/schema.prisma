@@ -14,7 +14,7 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(uuid())
+  id        Int       @id @default(autoincrement())
   cityId    Int?      @map("city_id")
   name      String
   email     String    @unique
@@ -44,8 +44,8 @@ model Category {
 }
 
 model Event {
-  id          String   @id @default(uuid())
-  hostId      String   @map("host_id")
+  id          Int      @id @default(autoincrement())
+  hostId      Int      @map("host_id")
   categoryId  Int      @map("category_id")
   cityId      Int      @map("city_id")
   title       String
@@ -68,8 +68,8 @@ model Event {
 
 model EventJoin {
   id        Int      @id @default(autoincrement())
-  eventId   String   @map("event_id")
-  userId    String   @map("user_id")
+  eventId   Int      @map("event_id")
+  userId    Int      @map("user_id")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -82,8 +82,8 @@ model EventJoin {
 
 model Review {
   id          Int      @id @default(autoincrement())
-  eventId     String   @map("event_id")
-  userId      String   @map("user_id")
+  eventId     Int      @map("event_id")
+  userId      Int      @map("user_id")
   title       String
   score       Int
   description String?
