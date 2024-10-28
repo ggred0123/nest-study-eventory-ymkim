@@ -20,7 +20,6 @@ export class EventRepository {
         startTime: data.startTime,
         endTime: data.endTime,
         maxPeople: data.maxPeople,
-        
       },
       select: {
         id: true,
@@ -62,7 +61,7 @@ export class EventRepository {
     return !!event;
   }
 
- /* async isUserJoinedEvent(userId: number, eventId: number): Promise<boolean> {
+  /* async isUserJoinedEvent(userId: number, eventId: number): Promise<boolean> {
     const event = await this.prisma.eventJoin.findUnique({
       where: {
         eventId_userId: {
