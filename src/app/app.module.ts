@@ -9,7 +9,14 @@ import { ReviewModule } from '../review/review.module';
 import { UserModule } from '../user/user.module';
 import { EventModule } from 'src/event/event.module';
 @Module({
-  imports: [configModule, RegionModule, CommonModule, ReviewModule,EventModule, UserModule],
+  imports: [
+    configModule,
+    RegionModule,
+    CommonModule,
+    ReviewModule,
+    EventModule,
+    UserModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
