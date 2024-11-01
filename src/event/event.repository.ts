@@ -234,6 +234,4 @@ export class EventRepository {
       },
     });
   }
-
-    
 }
