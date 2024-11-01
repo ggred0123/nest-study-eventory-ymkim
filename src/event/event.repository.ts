@@ -46,6 +46,7 @@ export class EventRepository {
     return this.prisma.user.findUnique({
       where: {
         id: userId,
+        deletedAt: null,
       },
     });
   }
@@ -83,6 +84,9 @@ export class EventRepository {
           eventId,
           userId,
         },
+        user: {
+        deletedAt: null,
+        },
       },
     });
 
@@ -118,7 +122,6 @@ export class EventRepository {
     });
   }
 
-  //index.d.ts에서 eventJoin 에 적용가능한 aggregate count 찾았습니다!
   async getEventJoinCount(eventId: number): Promise<number> {
     return this.prisma.eventJoin.count({
       where: {

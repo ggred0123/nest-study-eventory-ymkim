@@ -84,6 +84,12 @@ export class EventService {
       userId,
       eventId,
     );
+    const user = await this.eventRepository.getUserById(userId);
+
+    if (!user) {
+      throw new NotFoundException('존재하지 않는 user입니다.');
+    }
+
     if (isUserJoinedEvent) {
       throw new ConflictException('해당 유저가 이미 참가한 이벤트입니다.');
     }
@@ -112,6 +118,12 @@ export class EventService {
       userId,
       eventId,
     );
+    const user = await this.eventRepository.getUserById(userId);
+
+    if (!user) {
+      throw new NotFoundException('존재하지 않는 user입니다.');
+    }
+
     if (!isUserJoinedEvent) {
       throw new ConflictException('해당 유저가 참가하지 않은 이벤트입니다.');
     }
