@@ -250,20 +250,25 @@ export class EventService {
     }
 
 
-    if (
-      (payload.startTime && payload.endTime && payload.startTime > payload.endTime) ||
-      (!payload.startTime && payload.endTime && payload.endTime < event.startTime) ||
-      (payload.startTime && !payload.endTime && payload.startTime > event.endTime)
-    ) {
+    if (payload.startTime && payload.endTime && payload.startTime > payload.endTime)   
+     {
       throw new ConflictException(
         '시작 시간이 끝나는 시간보다 늦게 수정할 수 없습니다.',
       );
     }
+    if(!payload.startTime && payload.endTime && payload.endTime < event.startTime){
+      throw new ConflictException(
+        '시작 시간이 현재 시간보다 빠르게 수정할 수 없습니다.',
+      );
+    }
+    if(payload.startTime && !payload.endTime && payload.startTime > event.endTime){
+      throw new ConflictException(
+        '시작 시간이 현재 시간보다 빠르게 수정할 수 없습니다.',
+      );
+    }
     
 
-    if (payload.maxPeople && payload.maxPeople < 1) {
-      throw new ConflictException('maxPeople은 1이상이어야 합니다.');
-    }
+    
 
     if (payload.categoryId) {
       const category = await this.eventRepository.getCategoryById(
