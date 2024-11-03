@@ -212,26 +212,18 @@ export class EventRepository {
     });
   }
 
-  async deleteEventJoin(eventId: number): Promise<void> {
-    await this.prisma.event.update({
-      where: {
-        id: eventId,
-      },
-      data: {
-        eventJoin: {
-          deleteMany: {
-            eventId: eventId,
-          },
+  async deleteEventWithJoins(eventId: number): Promise<void> {
+    await this.prisma.$transaction([
+      this.prisma.eventJoin.deleteMany({
+        where: {
+          eventId: eventId,
         },
-      },
-    });
-  }
-
-  async deleteEvent(id: number): Promise<void> {
-    await this.prisma.event.delete({
-      where: {
-        id: id,
-      },
-    });
+      }),
+      this.prisma.event.delete({
+        where: {
+          id: eventId,
+        },
+      }),
+    ]);
   }
 }

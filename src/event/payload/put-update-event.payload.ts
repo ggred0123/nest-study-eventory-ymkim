@@ -4,28 +4,28 @@ import { Type } from 'class-transformer';
 
 export class PutUpdateEventPayload {
   @IsString()
-  @ApiPropertyOptional({
+  @ApiProperty({
     description: '모임 이름',
     type: String,
   })
   title!: string;
 
   @IsString()
-  @ApiPropertyOptional({
+  @ApiProperty({
     description: '모임 설명',
     type: String,
   })
   description!: string;
 
   @IsInt()
-  @ApiPropertyOptional({
+  @ApiProperty({
     description: '카테고리 ID',
     type: Number,
   })
   categoryId!: number;
 
   @IsInt()
-  @ApiPropertyOptional({
+  @ApiProperty({
     description: '도시 ID',
     type: Number,
   })
@@ -33,7 +33,7 @@ export class PutUpdateEventPayload {
 
   @IsDate()
   @Type(() => Date)
-  @ApiPropertyOptional({
+  @ApiProperty({
     description: '시작 시간',
     type: Date,
   })
@@ -41,7 +41,7 @@ export class PutUpdateEventPayload {
 
   @IsDate()
   @Type(() => Date)
-  @ApiPropertyOptional({
+  @ApiProperty({
     description: '종료 시간',
     type: Date,
   })
@@ -49,7 +49,7 @@ export class PutUpdateEventPayload {
 
   @IsInt()
   @Min(1)
-  @ApiPropertyOptional({
+  @ApiProperty({
     description: '최대 인원',
     type: Number,
   })
