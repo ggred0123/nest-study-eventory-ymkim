@@ -164,8 +164,6 @@ export class EventService {
       maxPeople: payload.maxPeople,
     };
 
-
-
     const category = await this.eventRepository.getCategoryById(
       payload.categoryId,
     );
@@ -306,8 +304,6 @@ export class EventService {
     if (event.startTime < new Date()) {
       throw new ConflictException('이미 시작된 이벤트는 삭제할 수 없습니다.');
     }
-
-    
 
     await this.eventRepository.deleteEventWithJoins(eventId);
   }
