@@ -192,9 +192,10 @@ export class EventService {
         '시작 시간이 현재 시간보다 빠르게 수정할 수 없습니다.',
       );
     }
-    const eventJoinCount = await this.eventRepository.getEventJoinCount(eventId);
+    const eventJoinCount =
+      await this.eventRepository.getEventJoinCount(eventId);
 
-    if(payload.maxPeople < eventJoinCount){
+    if (payload.maxPeople < eventJoinCount) {
       throw new ConflictException(
         '정원을 현재 참가자 수보다 작게 수정할 수 없습니다.',
       );
@@ -281,16 +282,14 @@ export class EventService {
         '시작 시간이 현재 시간보다 빠르게 수정할 수 없습니다.',
       );
     }
-    const eventJoinCount = await this.eventRepository.getEventJoinCount(eventId);
+    const eventJoinCount =
+      await this.eventRepository.getEventJoinCount(eventId);
 
-    if(payload.maxPeople && payload.maxPeople < eventJoinCount){
+    if (payload.maxPeople && payload.maxPeople < eventJoinCount) {
       throw new ConflictException(
         '정원을 현재 참가자 수보다 작게 수정할 수 없습니다.',
       );
     }
-    
-
-    
 
     if (payload.categoryId) {
       const category = await this.eventRepository.getCategoryById(
