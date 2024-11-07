@@ -158,7 +158,7 @@ export class EventService {
       title: payload.title,
       description: payload.description,
       categoryId: payload.categoryId,
-      cityId: payload.cityId,
+      cityIds: payload.cityIds,
       startTime: payload.startTime,
       endTime: payload.endTime,
       maxPeople: payload.maxPeople,
@@ -172,7 +172,7 @@ export class EventService {
       throw new NotFoundException('category가 존재하지 않습니다.');
     }
 
-    const city = await this.eventRepository.getCityById(payload.cityId);
+    const city = await this.eventRepository.getCityById(payload.cityIds[0]);
 
     if (!city) {
       throw new NotFoundException('city가 존재하지 않습니다.');
@@ -222,7 +222,7 @@ export class EventService {
     if (payload.categoryId === null) {
       throw new BadRequestException('categoryId은 null이 될 수 없습니다.');
     }
-    if (payload.cityId === null) {
+    if (payload.cityIds === null) {
       throw new BadRequestException('cityId은 null이 될 수 없습니다.');
     }
     if (payload.startTime === null) {
@@ -245,7 +245,7 @@ export class EventService {
       title: payload.title,
       description: payload.description,
       categoryId: payload.categoryId,
-      cityId: payload.cityId,
+      cityIds: payload.cityIds,
       startTime: payload.startTime,
       endTime: payload.endTime,
       maxPeople: payload.maxPeople,
@@ -301,13 +301,17 @@ export class EventService {
       }
     }
 
-    if (payload.cityId) {
-      const city = await this.eventRepository.getCityById(payload.cityId);
+    if (payload.cityIds) {
+
+    for (const cityId of payload.cityIds) {
+      const city = await this.eventRepository.getCityById(cityId);
 
       if (!city) {
         throw new NotFoundException('city가 존재하지 않습니다.');
       }
     }
+  }
+    
 
     const updatedEvent = await this.eventRepository.updateEvent(
       eventId,
@@ -329,5 +333,5 @@ export class EventService {
     }
 
     await this.eventRepository.deleteEventWithJoins(eventId);
-  }
+  };
 }

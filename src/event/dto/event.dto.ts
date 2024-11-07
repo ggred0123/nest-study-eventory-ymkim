@@ -14,11 +14,6 @@ export class EventDto {
   })
   id!: number;
 
-  @ApiProperty({
-    description: '도시 ID들',
-    type: [Number],
-  })
-  cityIds!: number[];
 
   @ApiProperty({
     description: '모임 이름',
@@ -61,7 +56,6 @@ export class EventDto {
       hostId: event.hostId,
       id: event.id,
       title: event.title,
-      cityIds: event.cityIds,
       description: event.description,
       categoryId: event.categoryId,
       startTime: event.startTime,

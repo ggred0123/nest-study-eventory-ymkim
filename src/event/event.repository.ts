@@ -18,7 +18,6 @@ export class EventRepository {
         hostId: data.hostId,
         title: data.title,
         description: data.description,
-        cityId: data.cityIds[0],
         categoryId: data.categoryId,
         startTime: data.startTime,
         endTime: data.endTime,
@@ -38,14 +37,13 @@ export class EventRepository {
         id: true,
         hostId: true,
         title: true,
-        cityId: true,
         description: true,
         categoryId: true,
         startTime: true,
         endTime: true,
         maxPeople: true,
           },
-        }),
+        });
       }  
     
   
@@ -158,7 +156,6 @@ export class EventRepository {
         id: true,
         hostId: true,
         title: true,
-        cityId: true,
         description: true,
         categoryId: true,
         startTime: true,
@@ -206,6 +203,7 @@ export class EventRepository {
       select: {
         id: true,
         hostId: true,
+
         title: true,
         description: true,
         categoryId: true,
