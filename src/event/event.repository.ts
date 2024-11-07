@@ -28,7 +28,7 @@ export class EventRepository {
           },
         },
         eventCity: {
-          create: data.cityIds.map((cityId) => ({
+          create: data.cityIds?.map((cityId) => ({
             cityId: cityId,
           })),
         },
@@ -197,6 +197,14 @@ export class EventRepository {
         startTime: data.startTime,
         endTime: data.endTime,
         maxPeople: data.maxPeople,
+        eventCity: {
+          deleteMany: {
+            eventId: eventId,
+          },
+          create: (data.cityIds ?? []).map((cityId) => ({
+            cityId: cityId,
+          })),
+        },
       },
       select: {
         id: true,
