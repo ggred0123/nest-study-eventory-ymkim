@@ -18,6 +18,7 @@ export class EventRepository {
         hostId: data.hostId,
         title: data.title,
         description: data.description,
+        cityId: data.cityIds[0],
         categoryId: data.categoryId,
         startTime: data.startTime,
         endTime: data.endTime,
@@ -37,14 +38,17 @@ export class EventRepository {
         id: true,
         hostId: true,
         title: true,
+        cityId: true,
         description: true,
         categoryId: true,
         startTime: true,
         endTime: true,
         maxPeople: true,
-      },
-    });
-  }
+          },
+        }),
+      }  
+    
+  
 
   async getUserById(userId: number): Promise<User | null> {
     return this.prisma.user.findUnique({
@@ -154,6 +158,7 @@ export class EventRepository {
         id: true,
         hostId: true,
         title: true,
+        cityId: true,
         description: true,
         categoryId: true,
         startTime: true,

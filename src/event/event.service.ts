@@ -31,7 +31,7 @@ export class EventService {
       throw new NotFoundException('category가 존재하지 않습니다.');
     }
 
-    const city = await this.eventRepository.getCityById(payload.cityId);
+    const city = await this.eventRepository.getCityById(payload.cityIds[0]);
     if (!city) {
       throw new NotFoundException('city가 존재하지 않습니다.');
     }
@@ -52,6 +52,7 @@ export class EventService {
       hostId: payload.hostId,
       title: payload.title,
       description: payload.description,
+      cityIds: payload.cityIds,
       categoryId: payload.categoryId,
       startTime: payload.startTime,
       endTime: payload.endTime,
