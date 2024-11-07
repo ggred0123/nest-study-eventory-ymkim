@@ -28,7 +28,7 @@ export class EventRepository {
           },
         },
         eventCity: {
-          create: data.cityIds.map(cityId => ({
+          create: data.cityIds.map((cityId) => ({
             cityId: cityId,
           })),
         },

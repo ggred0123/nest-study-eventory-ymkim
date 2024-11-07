@@ -32,7 +32,6 @@ export class CreateEventPayload {
   })
   categoryId!: number;
 
-  
   @IsDate()
   @Type(() => Date)
   @ApiProperty({

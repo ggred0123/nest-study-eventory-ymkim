@@ -32,7 +32,6 @@ export class EventDto {
   })
   categoryId!: number;
 
-
   @ApiProperty({
     description: '시작 시간',
     type: Date,
