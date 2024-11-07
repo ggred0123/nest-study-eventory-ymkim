@@ -42,11 +42,9 @@ export class EventRepository {
         startTime: true,
         endTime: true,
         maxPeople: true,
-          },
-        });
-      }  
-    
-  
+      },
+    });
+  }
 
   async getUserById(userId: number): Promise<User | null> {
     return this.prisma.user.findUnique({

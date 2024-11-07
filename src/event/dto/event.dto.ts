@@ -14,7 +14,6 @@ export class EventDto {
   })
   id!: number;
 
-
   @ApiProperty({
     description: '모임 이름',
     type: String,
