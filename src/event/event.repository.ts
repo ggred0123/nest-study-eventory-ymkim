@@ -42,11 +42,9 @@ export class EventRepository {
         startTime: true,
         endTime: true,
         maxPeople: true,
-          },
-        });
-      }  
-    
-  
+      },
+    });
+  }
 
   async getUserById(userId: number): Promise<User | null> {
     return this.prisma.user.findUnique({
@@ -203,7 +201,6 @@ export class EventRepository {
       select: {
         id: true,
         hostId: true,
-
         title: true,
         description: true,
         categoryId: true,
@@ -216,6 +213,11 @@ export class EventRepository {
 
   async deleteEventWithJoins(eventId: number): Promise<void> {
     await this.prisma.$transaction([
+      this.prisma.eventCity.deleteMany({
+        where: {
+          eventId: eventId,
+        },
+      }),
       this.prisma.eventJoin.deleteMany({
         where: {
           eventId: eventId,
@@ -224,11 +226,6 @@ export class EventRepository {
       this.prisma.event.delete({
         where: {
           id: eventId,
-        },
-      }),
-      this.prisma.eventCity.deleteMany({
-        where: {
-          eventId: eventId,
         },
       }),
     ]);
