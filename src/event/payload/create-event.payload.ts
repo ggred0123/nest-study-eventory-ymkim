@@ -32,13 +32,7 @@ export class CreateEventPayload {
   })
   categoryId!: number;
 
-  @IsInt()
-  @ApiProperty({
-    description: '도시 ID',
-    type: Number,
-  })
-  cityId!: number;
-
+  
   @IsDate()
   @Type(() => Date)
   @ApiProperty({

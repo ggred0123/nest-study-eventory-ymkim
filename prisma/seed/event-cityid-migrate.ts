@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+/* import { PrismaClient } from '@prisma/client';
 
 type CreateEventCityId ={
     eventId: number;
@@ -10,7 +10,7 @@ async function main() {
 
     const events = await prisma.event.findMany();
 
-    const data: CreateEventCityId[] = events.map((event) => {
+   const data: CreateEventCityId[] = events.map((event) => {
         return {
             eventId: event.id,
             cityId: event.cityId,
@@ -24,4 +24,4 @@ async function main() {
     });
 
 }
-main();
+main();*/

@@ -6,6 +6,7 @@ import { User, Event, Category, City, EventJoin } from '@prisma/client';
 import { EventQuery } from './query/event.query';
 import { PrismaClient } from '@prisma/client';
 import { UpdateEventData } from './type/update-event-data.type';
+import { create } from 'lodash';
 
 @Injectable()
 export class EventRepository {
@@ -18,7 +19,6 @@ export class EventRepository {
         title: data.title,
         description: data.description,
         categoryId: data.categoryId,
-        cityId: data.cityId,
         startTime: data.startTime,
         endTime: data.endTime,
         maxPeople: data.maxPeople,
@@ -27,6 +27,11 @@ export class EventRepository {
             userId: data.hostId,
           },
         },
+        eventCity: {
+          create: data.cityIds.map(cityId => ({
+            cityId: cityId,
+          })),
+        },
       },
       select: {
         id: true,
@@ -34,7 +39,6 @@ export class EventRepository {
         title: true,
         description: true,
         categoryId: true,
-        cityId: true,
         startTime: true,
         endTime: true,
         maxPeople: true,
@@ -152,7 +156,6 @@ export class EventRepository {
         title: true,
         description: true,
         categoryId: true,
-        cityId: true,
         startTime: true,
         endTime: true,
         maxPeople: true,
@@ -164,7 +167,6 @@ export class EventRepository {
     return this.prisma.event.findMany({
       where: {
         hostId: query.hostId,
-        cityId: query.cityId,
         categoryId: query.categoryId,
       },
       select: {
@@ -173,7 +175,6 @@ export class EventRepository {
         title: true,
         description: true,
         categoryId: true,
-        cityId: true,
         startTime: true,
         endTime: true,
         maxPeople: true,
@@ -193,7 +194,6 @@ export class EventRepository {
         title: data.title,
         description: data.description,
         categoryId: data.categoryId,
-        cityId: data.cityId,
         startTime: data.startTime,
         endTime: data.endTime,
         maxPeople: data.maxPeople,
@@ -204,7 +204,6 @@ export class EventRepository {
         title: true,
         description: true,
         categoryId: true,
-        cityId: true,
         startTime: true,
         endTime: true,
         maxPeople: true,
@@ -222,6 +221,11 @@ export class EventRepository {
       this.prisma.event.delete({
         where: {
           id: eventId,
+        },
+      }),
+      this.prisma.eventCity.deleteMany({
+        where: {
+          eventId: eventId,
         },
       }),
     ]);
