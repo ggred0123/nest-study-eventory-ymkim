@@ -302,16 +302,14 @@ export class EventService {
     }
 
     if (payload.cityIds) {
+      for (const cityId of payload.cityIds) {
+        const city = await this.eventRepository.getCityById(cityId);
 
-    for (const cityId of payload.cityIds) {
-      const city = await this.eventRepository.getCityById(cityId);
-
-      if (!city) {
-        throw new NotFoundException('city가 존재하지 않습니다.');
+        if (!city) {
+          throw new NotFoundException('city가 존재하지 않습니다.');
+        }
       }
     }
-  }
-    
 
     const updatedEvent = await this.eventRepository.updateEvent(
       eventId,
@@ -333,5 +331,5 @@ export class EventService {
     }
 
     await this.eventRepository.deleteEventWithJoins(eventId);
-  };
+  }
 }
