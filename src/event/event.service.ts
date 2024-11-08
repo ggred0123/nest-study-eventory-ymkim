@@ -9,7 +9,6 @@ import { CreateEventPayload } from './payload/create-event.payload';
 import { EventDto, EventListDto } from './dto/event.dto';
 import { CreateEventData } from './type/create-event-data.type';
 import { EventQuery } from './query/event.query';
-import { EventParticipantPayload } from './payload/create-eventJoin.payload';
 import { UpdateEventData } from './type/update-event-data.type';
 import { PatchUpdateEventPayload } from './payload/patch-update-event.payload';
 import { PutUpdateEventPayload } from './payload/put-update-event.payload';
@@ -31,7 +30,7 @@ export class EventService {
       throw new NotFoundException('category가 존재하지 않습니다.');
     }
 
-    const city = await this.eventRepository.getCityById(payload.cityIds[0]);
+    const city = await this.eventRepository.checkCityIds(payload.cityIds);
     if (!city) {
       throw new NotFoundException('city가 존재하지 않습니다.');
     }
@@ -302,12 +301,9 @@ export class EventService {
     }
 
     if (payload.cityIds) {
-      for (const cityId of payload.cityIds) {
-        const city = await this.eventRepository.getCityById(cityId);
-
-        if (!city) {
-          throw new NotFoundException('city가 존재하지 않습니다.');
-        }
+      const city = await this.eventRepository.checkCityIds(payload.cityIds);
+      if (!city) {
+        throw new NotFoundException('city가 존재하지 않습니다.');
       }
     }
 
@@ -330,6 +326,6 @@ export class EventService {
       throw new ConflictException('이미 시작된 이벤트는 삭제할 수 없습니다.');
     }
 
-    await this.eventRepository.deleteEventWithJoins(eventId);
+    await this.eventRepository.deleteEventWithJoinsandCity(eventId);
   }
 }

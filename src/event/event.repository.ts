@@ -4,9 +4,7 @@ import { CreateEventData } from './type/create-event-data.type';
 import { EventData } from './type/event-data.type';
 import { User, Event, Category, City, EventJoin } from '@prisma/client';
 import { EventQuery } from './query/event.query';
-import { PrismaClient } from '@prisma/client';
 import { UpdateEventData } from './type/update-event-data.type';
-import { create } from 'lodash';
 
 @Injectable()
 export class EventRepository {
@@ -28,7 +26,7 @@ export class EventRepository {
           },
         },
         eventCity: {
-          create: data.cityIds?.map((cityId) => ({
+          create: data.cityIds.map((cityId) => ({
             cityId: cityId,
           })),
         },
@@ -198,11 +196,16 @@ export class EventRepository {
         endTime: data.endTime,
         maxPeople: data.maxPeople,
         eventCity: {
-          deleteMany: {
-            eventId: eventId,
-          },
-          create: (data.cityIds ?? []).map((cityId) => ({
-            cityId: cityId,
+          update: data.cityIds?.map((cityId) => ({
+            where: {
+              eventId_cityId: {
+                eventId,
+                cityId,
+              },
+            },
+            data: {
+              cityId,
+            },
           })),
         },
       },
@@ -219,23 +222,36 @@ export class EventRepository {
     });
   }
 
-  async deleteEventWithJoins(eventId: number): Promise<void> {
-    await this.prisma.$transaction([
-      this.prisma.eventCity.deleteMany({
-        where: {
-          eventId: eventId,
+  async checkCityIds(cityIds: number[]): Promise<boolean> {
+    const city = await this.prisma.city.findMany({
+      where: {
+        id: {
+          in: cityIds,
         },
-      }),
-      this.prisma.eventJoin.deleteMany({
-        where: {
-          eventId: eventId,
+      },
+    });
+    return city.length === cityIds.length;
+  }
+
+  async deleteEventWithJoinsandCity(eventId: number): Promise<void> {
+    await this.prisma.event.update({
+      where: {
+        id: eventId,
+      },
+      data: {
+        eventJoin: {
+          deleteMany: {},
         },
-      }),
-      this.prisma.event.delete({
-        where: {
-          id: eventId,
+        eventCity: {
+          deleteMany: {},
         },
-      }),
-    ]);
+      },
+    });
+
+    await this.prisma.event.delete({
+      where: {
+        id: eventId,
+      },
+    });
   }
 }
