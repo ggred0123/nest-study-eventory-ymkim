@@ -1,5 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EventData } from '../type/event-data.type';
+import { IsOptional } from 'class-validator';
 
 export class EventDto {
   @ApiProperty({
@@ -19,6 +20,13 @@ export class EventDto {
     type: String,
   })
   title!: string;
+
+  @IsOptional()
+  @ApiPropertyOptional({
+    description: '도시 ID들',
+    type: [Number],
+  })
+  cityIds?: number[];
 
   @ApiProperty({
     description: '모임 설명',

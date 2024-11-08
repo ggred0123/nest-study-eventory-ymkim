@@ -196,16 +196,11 @@ export class EventRepository {
         endTime: data.endTime,
         maxPeople: data.maxPeople,
         eventCity: {
-          update: data.cityIds?.map((cityId) => ({
-            where: {
-              eventId_cityId: {
-                eventId,
-                cityId,
-              },
-            },
-            data: {
-              cityId,
-            },
+          deleteMany: data.cityIds?.map((eventId) => ({
+            eventId: eventId,
+          })),
+          create: data.cityIds?.map((cityId) => ({
+            cityId: cityId,
           })),
         },
       },
@@ -222,7 +217,7 @@ export class EventRepository {
     });
   }
 
-  async checkCityIds(cityIds: number[]): Promise<boolean> {
+  async checkCityIdsvalidity(cityIds: number[]): Promise<boolean> {
     const city = await this.prisma.city.findMany({
       where: {
         id: {

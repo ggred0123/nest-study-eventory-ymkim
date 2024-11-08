@@ -30,9 +30,11 @@ export class EventService {
       throw new NotFoundException('category가 존재하지 않습니다.');
     }
 
-    const city = await this.eventRepository.checkCityIds(payload.cityIds);
-    if (!city) {
-      throw new NotFoundException('city가 존재하지 않습니다.');
+    const cityvalidity = await this.eventRepository.checkCityIdsvalidity(
+      payload.cityIds,
+    );
+    if (!cityvalidity) {
+      throw new NotFoundException('존재하지 않는 city가 포함되어 있습니다.');
     }
 
     if (payload.startTime < new Date()) {
@@ -171,10 +173,12 @@ export class EventService {
       throw new NotFoundException('category가 존재하지 않습니다.');
     }
 
-    const city = await this.eventRepository.getCityById(payload.cityIds[0]);
+    const cityvalidity = await this.eventRepository.checkCityIdsvalidity(
+      payload.cityIds,
+    );
 
-    if (!city) {
-      throw new NotFoundException('city가 존재하지 않습니다.');
+    if (!cityvalidity) {
+      throw new NotFoundException('존재하지 않는 city가 포함되어 있습니다.');
     }
 
     if (event.startTime < new Date()) {
@@ -301,9 +305,11 @@ export class EventService {
     }
 
     if (payload.cityIds) {
-      const city = await this.eventRepository.checkCityIds(payload.cityIds);
-      if (!city) {
-        throw new NotFoundException('city가 존재하지 않습니다.');
+      const cityvalidity = await this.eventRepository.checkCityIdsvalidity(
+        payload.cityIds,
+      );
+      if (!cityvalidity) {
+        throw new NotFoundException('존재하지 않는 city가 포함되어 있습니다.');
       }
     }
 
