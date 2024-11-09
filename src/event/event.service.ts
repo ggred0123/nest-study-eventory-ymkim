@@ -30,10 +30,10 @@ export class EventService {
       throw new NotFoundException('category가 존재하지 않습니다.');
     }
 
-    const cityvalidity = await this.eventRepository.checkCityIdsvalidity(
+    const cityValidity = await this.eventRepository.checkCityIdsValidity(
       payload.cityIds,
     );
-    if (!cityvalidity) {
+    if (!cityValidity) {
       throw new NotFoundException('존재하지 않는 city가 포함되어 있습니다.');
     }
 
@@ -77,7 +77,11 @@ export class EventService {
 
   async getEvents(query: EventQuery): Promise<EventListDto> {
     const events = await this.eventRepository.getEvents(query);
-    return EventListDto.from(events);
+
+    const manyCityIds = await Promise.all(
+      events.map((event) => this.eventRepository.getCityIdsByEventId(event.id)),
+    );
+    return EventListDto.from(events, manyCityIds);
   }
 
   async joinEvent(eventId: number, userId: number): Promise<void> {
@@ -173,11 +177,11 @@ export class EventService {
       throw new NotFoundException('category가 존재하지 않습니다.');
     }
 
-    const cityvalidity = await this.eventRepository.checkCityIdsvalidity(
+    const cityValidity = await this.eventRepository.checkCityIdsValidity(
       payload.cityIds,
     );
 
-    if (!cityvalidity) {
+    if (!cityValidity) {
       throw new NotFoundException('존재하지 않는 city가 포함되어 있습니다.');
     }
 
@@ -305,10 +309,10 @@ export class EventService {
     }
 
     if (payload.cityIds) {
-      const cityvalidity = await this.eventRepository.checkCityIdsvalidity(
+      const cityValidity = await this.eventRepository.checkCityIdsValidity(
         payload.cityIds,
       );
-      if (!cityvalidity) {
+      if (!cityValidity) {
         throw new NotFoundException('존재하지 않는 city가 포함되어 있습니다.');
       }
     }
@@ -332,6 +336,6 @@ export class EventService {
       throw new ConflictException('이미 시작된 이벤트는 삭제할 수 없습니다.');
     }
 
-    await this.eventRepository.deleteEventWithJoinsandCity(eventId);
+    await this.eventRepository.deleteEvent(eventId);
   }
 }

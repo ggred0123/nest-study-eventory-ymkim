@@ -69,6 +69,16 @@ export class EventRepository {
     });
   }
 
+  async getCityIdsByEventId(eventId: number): Promise<number[]> {
+    const eventCity = await this.prisma.eventCity.findMany({
+      where: {
+        eventId: eventId,
+      },
+    });
+
+    return eventCity.map((city) => city.cityId);
+  }
+
   async isEventExist(id: number): Promise<boolean> {
     const event = await this.prisma.event.findUnique({
       where: {
@@ -195,14 +205,16 @@ export class EventRepository {
         startTime: data.startTime,
         endTime: data.endTime,
         maxPeople: data.maxPeople,
-        eventCity: {
-          deleteMany: data.cityIds?.map((eventId) => ({
-            eventId: eventId,
-          })),
-          create: data.cityIds?.map((cityId) => ({
-            cityId: cityId,
-          })),
-        },
+        ...(data.cityIds !== undefined && {
+          eventCity: {
+            deleteMany: {
+              eventId: eventId,
+            },
+            create: data.cityIds.map((cityId) => ({
+              cityId: cityId,
+            })),
+          },
+        }),
       },
       select: {
         id: true,
@@ -217,7 +229,7 @@ export class EventRepository {
     });
   }
 
-  async checkCityIdsvalidity(cityIds: number[]): Promise<boolean> {
+  async checkCityIdsValidity(cityIds: number[]): Promise<boolean> {
     const city = await this.prisma.city.findMany({
       where: {
         id: {
@@ -228,25 +240,23 @@ export class EventRepository {
     return city.length === cityIds.length;
   }
 
-  async deleteEventWithJoinsandCity(eventId: number): Promise<void> {
-    await this.prisma.event.update({
-      where: {
-        id: eventId,
-      },
-      data: {
-        eventJoin: {
-          deleteMany: {},
+  async deleteEvent(eventId: number): Promise<void> {
+    await this.prisma.$transaction([
+      this.prisma.eventJoin.deleteMany({
+        where: {
+          eventId: eventId,
         },
-        eventCity: {
-          deleteMany: {},
+      }),
+      this.prisma.eventCity.deleteMany({
+        where: {
+          eventId: eventId,
         },
-      },
-    });
-
-    await this.prisma.event.delete({
-      where: {
-        id: eventId,
-      },
-    });
+      }),
+      this.prisma.event.delete({
+        where: {
+          id: eventId,
+        },
+      }),
+    ]);
   }
 }

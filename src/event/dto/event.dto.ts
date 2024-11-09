@@ -21,12 +21,11 @@ export class EventDto {
   })
   title!: string;
 
-  @IsOptional()
-  @ApiPropertyOptional({
+  @ApiProperty({
     description: '도시 ID들',
     type: [Number],
   })
-  cityIds?: number[];
+  cityIds!: number[];
 
   @ApiProperty({
     description: '모임 설명',
@@ -58,7 +57,7 @@ export class EventDto {
   })
   maxPeople!: number;
 
-  static from(event: EventData): EventDto {
+  static from(event: EventData, cityIds: number[] = []): EventDto {
     return {
       hostId: event.hostId,
       id: event.id,
@@ -68,11 +67,12 @@ export class EventDto {
       startTime: event.startTime,
       endTime: event.endTime,
       maxPeople: event.maxPeople,
+      cityIds,
     };
   }
 
-  static fromArray(events: EventData[]): EventDto[] {
-    return events.map((event) => this.from(event));
+  static fromArray(events: EventData[], manyCityIds: number[][]): EventDto[] {
+    return events.map((event, city) => this.from(event, manyCityIds[city]));
   }
 }
 
@@ -83,9 +83,9 @@ export class EventListDto {
   })
   events!: EventDto[];
 
-  static from(events: EventData[]): EventListDto {
+  static from(events: EventData[], manyCityIds: number[][]): EventListDto {
     return {
-      events: EventDto.fromArray(events),
+      events: EventDto.fromArray(events, manyCityIds),
     };
   }
 }
