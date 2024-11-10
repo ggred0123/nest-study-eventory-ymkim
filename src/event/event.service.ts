@@ -78,9 +78,6 @@ export class EventService {
   async getEvents(query: EventQuery): Promise<EventListDto> {
     const events = await this.eventRepository.getEvents(query);
 
-    const manyCityIds = await Promise.all(
-      events.map((event) => this.eventRepository.getCityIdsByEventId(event.id)),
-    );
     return EventListDto.from(events);
   }
 

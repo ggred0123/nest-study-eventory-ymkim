@@ -57,7 +57,7 @@ export class EventDto {
   })
   maxPeople!: number;
 
-  static from(event: EventData, cityIds: number[] = []): EventDto {
+  static from(event: EventData): EventDto {
     return {
       hostId: event.hostId,
       id: event.id,
