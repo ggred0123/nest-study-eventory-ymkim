@@ -67,12 +67,12 @@ export class EventDto {
       startTime: event.startTime,
       endTime: event.endTime,
       maxPeople: event.maxPeople,
-      cityIds,
+      cityIds: event.eventCity.map((city) => city.cityId),
     };
   }
 
-  static fromArray(events: EventData[], manyCityIds: number[][]): EventDto[] {
-    return events.map((event, city) => this.from(event, manyCityIds[city]));
+  static fromArray(events: EventData[]): EventDto[] {
+    return events.map((event) => this.from(event));
   }
 }
 
@@ -83,9 +83,9 @@ export class EventListDto {
   })
   events!: EventDto[];
 
-  static from(events: EventData[], manyCityIds: number[][]): EventListDto {
+  static from(events: EventData[]): EventListDto {
     return {
-      events: EventDto.fromArray(events, manyCityIds),
+      events: EventDto.fromArray(events),
     };
   }
 }

@@ -37,6 +37,12 @@ export class EventRepository {
         title: true,
         description: true,
         categoryId: true,
+        eventCity: {
+          select: {
+            id: true,
+            cityId: true,
+          },
+        },
         startTime: true,
         endTime: true,
         maxPeople: true,
@@ -164,6 +170,12 @@ export class EventRepository {
         title: true,
         description: true,
         categoryId: true,
+        eventCity: {
+          select: {
+            id: true,
+            cityId: true,
+          },
+        },
         startTime: true,
         endTime: true,
         maxPeople: true,
@@ -176,6 +188,7 @@ export class EventRepository {
       where: {
         hostId: query.hostId,
         categoryId: query.categoryId,
+        ...(query.cityId && { eventCity: { some: { cityId: query.cityId } } }),
       },
       select: {
         id: true,
@@ -183,6 +196,12 @@ export class EventRepository {
         title: true,
         description: true,
         categoryId: true,
+        eventCity: {
+          select: {
+            id: true,
+            cityId: true,
+          },
+        },
         startTime: true,
         endTime: true,
         maxPeople: true,
@@ -207,12 +226,14 @@ export class EventRepository {
         maxPeople: data.maxPeople,
         ...(data.cityIds !== undefined && {
           eventCity: {
-            deleteMany: {
-              eventId: eventId,
+            updateMany: {
+              where: {
+                eventId: eventId,
+              },
+              data: data.cityIds.map((cityId) => ({
+                cityId: cityId,
+              })),
             },
-            create: data.cityIds.map((cityId) => ({
-              cityId: cityId,
-            })),
           },
         }),
       },
@@ -222,6 +243,12 @@ export class EventRepository {
         title: true,
         description: true,
         categoryId: true,
+        eventCity: {
+          select: {
+            id: true,
+            cityId: true,
+          },
+        },
         startTime: true,
         endTime: true,
         maxPeople: true,
@@ -229,7 +256,7 @@ export class EventRepository {
     });
   }
 
-  async checkCityIdsValidity(cityIds: number[]): Promise<boolean> {
+  async isCityIdsValid(cityIds: number[]): Promise<boolean> {
     const city = await this.prisma.city.findMany({
       where: {
         id: {

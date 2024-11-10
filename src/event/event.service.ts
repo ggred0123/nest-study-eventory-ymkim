@@ -30,7 +30,7 @@ export class EventService {
       throw new NotFoundException('category가 존재하지 않습니다.');
     }
 
-    const cityValidity = await this.eventRepository.checkCityIdsValidity(
+    const cityValidity = await this.eventRepository.isCityIdsValid(
       payload.cityIds,
     );
     if (!cityValidity) {
@@ -81,7 +81,7 @@ export class EventService {
     const manyCityIds = await Promise.all(
       events.map((event) => this.eventRepository.getCityIdsByEventId(event.id)),
     );
-    return EventListDto.from(events, manyCityIds);
+    return EventListDto.from(events);
   }
 
   async joinEvent(eventId: number, userId: number): Promise<void> {
@@ -177,7 +177,7 @@ export class EventService {
       throw new NotFoundException('category가 존재하지 않습니다.');
     }
 
-    const cityValidity = await this.eventRepository.checkCityIdsValidity(
+    const cityValidity = await this.eventRepository.isCityIdsValid(
       payload.cityIds,
     );
 
@@ -309,7 +309,7 @@ export class EventService {
     }
 
     if (payload.cityIds) {
-      const cityValidity = await this.eventRepository.checkCityIdsValidity(
+      const cityValidity = await this.eventRepository.isCityIdsValid(
         payload.cityIds,
       );
       if (!cityValidity) {
