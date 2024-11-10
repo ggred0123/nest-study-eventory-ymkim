@@ -24,12 +24,12 @@ export class PutUpdateEventPayload {
   })
   categoryId!: number;
 
-  @IsInt()
+  @IsInt({ each: true })
   @ApiProperty({
-    description: '도시 ID',
-    type: Number,
+    description: '도시 ID들',
+    type: [Number],
   })
-  cityId!: number;
+  cityIds!: number[];
 
   @IsDate()
   @Type(() => Date)
