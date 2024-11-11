@@ -1,4 +1,12 @@
-import { Body, Controller, HttpCode, Post, Req, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiCreatedResponse,
   ApiOkResponse,
@@ -38,6 +46,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @UseGuards()
   @HttpCode(200)
   @ApiOperation({ summary: '로그인' })
   @ApiOkResponse({ type: TokenDto })
