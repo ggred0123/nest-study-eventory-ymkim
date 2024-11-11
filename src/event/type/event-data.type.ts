@@ -1,3 +1,7 @@
+import { ReviewData } from "src/review/type/review-data.type";
+
+
+
 export type EventData = {
   id: number;
   hostId: number;
@@ -11,4 +15,14 @@ export type EventData = {
     id: number;
     cityId: number;
   }[];
+  reviews:ReviewData[];
+
+  eventJoin: {
+    user:{
+      id:number,
+      name:string,
+    }
+  }[];
+
+  
 };

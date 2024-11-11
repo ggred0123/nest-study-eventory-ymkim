@@ -19,7 +19,7 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { EventDto, EventListDto } from './dto/event.dto';
+import { EventDto, EventListDto } from './dto/event-detail.dto';
 import { CreateEventPayload } from './payload/create-event.payload';
 import { EventParticipantPayload } from './payload/create-eventJoin.payload';
 import { EventQuery } from './query/event.query';

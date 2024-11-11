@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { EventRepository } from './event.repository';
 import { CreateEventPayload } from './payload/create-event.payload';
-import { EventDto, EventListDto } from './dto/event.dto';
+import { EventDto, EventListDto } from './dto/event-detail.dto';
 import { CreateEventData } from './type/create-event-data.type';
 import { EventQuery } from './query/event.query';
 import { UpdateEventData } from './type/update-event-data.type';
