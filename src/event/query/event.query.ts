@@ -20,6 +20,4 @@ export class EventQuery {
     type: Number,
   })
   categoryId?: number;
-
-
 }
