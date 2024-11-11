@@ -15,7 +15,8 @@ export type EventData = {
     id: number;
     cityId: number;
   }[];
-  reviews:ReviewData[];
+
+  review:ReviewData[];
 
   eventJoin: {
     user:{
