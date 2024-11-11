@@ -50,12 +50,12 @@ export class EventRepository {
                 id: true,
                 name: true,
               },
-            }
+            },
           },
         },
         review: {
           select: {
-            id:true,
+            id: true,
             eventId: true,
             userId: true,
             score: true,
@@ -206,12 +206,12 @@ export class EventRepository {
                 id: true,
                 name: true,
               },
-            }
+            },
           },
         },
         review: {
           select: {
-            id:true,
+            id: true,
             eventId: true,
             userId: true,
             score: true,
@@ -249,12 +249,12 @@ export class EventRepository {
                 id: true,
                 name: true,
               },
-            }
+            },
           },
         },
         review: {
           select: {
-            id:true,
+            id: true,
             eventId: true,
             userId: true,
             score: true,
@@ -316,12 +316,12 @@ export class EventRepository {
                 id: true,
                 name: true,
               },
-            }
+            },
           },
         },
         review: {
           select: {
-            id:true,
+            id: true,
             eventId: true,
             userId: true,
             score: true,

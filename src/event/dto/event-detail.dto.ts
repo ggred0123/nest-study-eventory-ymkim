@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EventData } from '../type/event-data.type';
-import { IsNotEmpty, IsOptional,IsEnum } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsEnum } from 'class-validator';
 import { ReviewDto } from 'src/review/dto/review.dto';
 import { EventJoin } from '@prisma/client';
 import { EventStatus } from '../enum/event-status-enum.type';
@@ -18,7 +18,6 @@ export class JoinedUserDto {
   })
   name!: string;
 }
-
 
 export class EventDto {
   @ApiProperty({
@@ -79,25 +78,21 @@ export class EventDto {
     description: '참가한 유저들',
     type: [JoinedUserDto],
   })
-  joinedUsers!:JoinedUserDto[];
+  joinedUsers!: JoinedUserDto[];
 
   @ApiProperty({
-    description:'이벤트 상태',
+    description: '이벤트 상태',
   })
   @IsNotEmpty()
   @IsEnum(Object.values(EventStatus))
-  status!:EventStatus;
+  status!: EventStatus;
   //type으로 했더니 오류나서 이넘 처리하는거 스텍오버플로우에서 이렇게 하라구..
-
 
   @ApiProperty({
     description: '리뷰들',
-    type:[ReviewDto],
+    type: [ReviewDto],
   })
-  reviews!:ReviewDto[];
-
-
-
+  reviews!: ReviewDto[];
 
   static from(event: EventData): EventDto {
     return {
@@ -110,15 +105,17 @@ export class EventDto {
       endTime: event.endTime,
       maxPeople: event.maxPeople,
       cityIds: event.eventCity.map((city) => city.cityId),
-      joinedUsers:event.eventJoin.map
-      ((eventJoin) => {return {id: eventJoin.user.id, name: eventJoin.user.name }}    
-    ),
+      joinedUsers: event.eventJoin.map((eventJoin) => {
+        return { id: eventJoin.user.id, name: eventJoin.user.name };
+      }),
       reviews: ReviewDto.fromArray(event.review),
 
-      status: new Date() > event.endTime ? 
-      EventStatus.COMPLETED : new Date > event.startTime ? 
-      EventStatus.ONGOING : EventStatus.PENDING,
-
+      status:
+        new Date() > event.endTime
+          ? EventStatus.COMPLETED
+          : new Date() > event.startTime
+            ? EventStatus.ONGOING
+            : EventStatus.PENDING,
     };
   }
 
