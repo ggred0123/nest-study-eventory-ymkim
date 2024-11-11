@@ -14,21 +14,24 @@ datasource db {
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
-  cityId    Int?      @map("city_id")
-  name      String
-  email     String    @unique
-  password  String
-  birthday  DateTime?
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
+  id           Int       @id @default(autoincrement())
+  cityId       Int?      @map("city_id")
+  categoryId   Int       @map("category_id")
+  name         String
+  email        String    @unique
+  password     String
+  refreshToken String?   @map("refresh_token")
+  birthday     DateTime?
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
 
   event     Event[]
   eventJoin EventJoin[]
   review    Review[]
 
-  city City? @relation(fields: [cityId], references: [id])
+  city     City?    @relation(fields: [cityId], references: [id])
+  category Category @relation(fields: [categoryId], references: [id])
 
   @@map("user")
 }
@@ -40,6 +43,7 @@ model Category {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   event Event[]
+  user  User[]
 
   @@map("category")
 }

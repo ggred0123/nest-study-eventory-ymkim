@@ -10,9 +10,11 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ReviewService } from './review.service';
 import {
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiNoContentResponse,
   ApiOkResponse,
@@ -24,6 +26,9 @@ import { CreateReviewPayload } from './payload/create-review.payload';
 import { ReviewQuery } from './query/review.query';
 import { PutUpdateReviewPayload } from './payload/put-update-review.payload';
 import { PatchUpdateReviewPayload } from './payload/patch-update-review.payload';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
+import { CurrentUser } from '../auth/decorator/user.decorator';
+import { UserBaseInfo } from '../auth/type/user-base-info.type';
 
 @Controller('reviews')
 @ApiTags('Review API')
@@ -31,10 +36,15 @@ export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: '리뷰를 생성합니다' })
   @ApiCreatedResponse({ type: ReviewDto })
-  async createReview(@Body() payload: CreateReviewPayload): Promise<ReviewDto> {
-    return this.reviewService.createReview(payload);
+  async createReview(
+    @Body() payload: CreateReviewPayload,
+    @CurrentUser() user: UserBaseInfo,
+  ): Promise<ReviewDto> {
+    return this.reviewService.createReview(payload, user);
   }
 
   @Get(':reviewId')
@@ -54,32 +64,41 @@ export class ReviewController {
   }
 
   @Put(':reviewId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: '리뷰를 수정합니다' })
   @ApiOkResponse({ type: ReviewDto })
   async putUpdateReview(
     @Param('reviewId', ParseIntPipe) reviewId: number,
     @Body() payload: PutUpdateReviewPayload,
+    @CurrentUser() user: UserBaseInfo,
   ): Promise<ReviewDto> {
-    return this.reviewService.putUpdateReview(reviewId, payload);
+    return this.reviewService.putUpdateReview(reviewId, payload, user);
   }
 
   @Patch(':reviewId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: '리뷰를 수정합니다' })
   @ApiOkResponse({ type: ReviewDto })
   async patchUpdateReview(
     @Param('reviewId', ParseIntPipe) reviewId: number,
     @Body() payload: PatchUpdateReviewPayload,
+    @CurrentUser() user: UserBaseInfo,
   ): Promise<ReviewDto> {
-    return this.reviewService.patchUpdateReview(reviewId, payload);
+    return this.reviewService.patchUpdateReview(reviewId, payload, user);
   }
 
   @Delete(':reviewId')
   @HttpCode(204)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: '리뷰를 삭제합니다' })
   @ApiNoContentResponse()
   async deleteReview(
     @Param('reviewId', ParseIntPipe) reviewId: number,
+    @CurrentUser() user: UserBaseInfo,
   ): Promise<void> {
-    return this.reviewService.deleteReview(reviewId);
+    return this.reviewService.deleteReview(reviewId, user);
   }
 }

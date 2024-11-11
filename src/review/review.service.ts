@@ -12,14 +12,19 @@ import { ReviewQuery } from './query/review.query';
 import { UpdateReviewData } from './type/update-review-data.type';
 import { PutUpdateReviewPayload } from './payload/put-update-review.payload';
 import { PatchUpdateReviewPayload } from './payload/patch-update-review.payload';
+import { UserBaseInfo } from '../auth/type/user-base-info.type';
+import { ReviewData } from './type/review-data.type';
 
 @Injectable()
 export class ReviewService {
   constructor(private readonly reviewRepository: ReviewRepository) {}
 
-  async createReview(payload: CreateReviewPayload): Promise<ReviewDto> {
+  async createReview(
+    payload: CreateReviewPayload,
+    user: UserBaseInfo,
+  ): Promise<ReviewDto> {
     const isReviewExist = await this.reviewRepository.isReviewExist(
-      payload.userId,
+      user.id,
       payload.eventId,
     );
     if (isReviewExist) {
@@ -27,7 +32,7 @@ export class ReviewService {
     }
 
     const isUserJoinedEvent = await this.reviewRepository.isUserJoinedEvent(
-      payload.userId,
+      user.id,
       payload.eventId,
     );
     if (!isUserJoinedEvent) {
@@ -45,19 +50,14 @@ export class ReviewService {
       );
     }
 
-    if (event.hostId === payload.userId) {
+    if (event.hostId === user.id) {
       throw new ConflictException(
         '자신이 주최한 이벤트에는 리뷰를 작성 할 수 없습니다.',
       );
     }
 
-    const user = await this.reviewRepository.getUserById(payload.userId);
-    if (!user) {
-      throw new NotFoundException('User가 존재하지 않습니다.');
-    }
-
     const createData: CreateReviewData = {
-      userId: payload.userId,
+      userId: user.id,
       eventId: payload.eventId,
       score: payload.score,
       title: payload.title,
@@ -88,12 +88,9 @@ export class ReviewService {
   async putUpdateReview(
     reviewId: number,
     payload: PutUpdateReviewPayload,
+    user: UserBaseInfo,
   ): Promise<ReviewDto> {
-    const review = await this.reviewRepository.getReviewById(reviewId);
-
-    if (!review) {
-      throw new NotFoundException('Review가 존재하지 않습니다.');
-    }
+    await this.checkPermissionForModifyReview(reviewId, user.id);
 
     const updateData: UpdateReviewData = {
       score: payload.score,
@@ -112,6 +109,7 @@ export class ReviewService {
   async patchUpdateReview(
     reviewId: number,
     payload: PatchUpdateReviewPayload,
+    user: UserBaseInfo,
   ): Promise<ReviewDto> {
     if (payload.score === null) {
       throw new BadRequestException('score는 null이 될 수 없습니다.');
@@ -121,11 +119,7 @@ export class ReviewService {
       throw new BadRequestException('title은 null이 될 수 없습니다.');
     }
 
-    const review = await this.reviewRepository.getReviewById(reviewId);
-
-    if (!review) {
-      throw new NotFoundException('Review가 존재하지 않습니다.');
-    }
+    await this.checkPermissionForModifyReview(reviewId, user.id);
 
     const updateData: UpdateReviewData = {
       score: payload.score,
@@ -141,13 +135,24 @@ export class ReviewService {
     return ReviewDto.from(updatedReview);
   }
 
-  async deleteReview(reviewId: number): Promise<void> {
+  async deleteReview(reviewId: number, user: UserBaseInfo): Promise<void> {
+    await this.checkPermissionForModifyReview(reviewId, user.id);
+
+    await this.reviewRepository.deleteReview(reviewId);
+  }
+
+  private async checkPermissionForModifyReview(
+    reviewId: number,
+    userId: number,
+  ): Promise<void> {
     const review = await this.reviewRepository.getReviewById(reviewId);
 
     if (!review) {
       throw new NotFoundException('Review가 존재하지 않습니다.');
     }
 
-    await this.reviewRepository.deleteReview(reviewId);
+    if (review.userId !== userId) {
+      throw new ConflictException('해당 리뷰를 삭제할 권한이 없습니다.');
+    }
   }
 }
