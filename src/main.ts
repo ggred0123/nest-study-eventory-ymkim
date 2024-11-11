@@ -3,6 +3,7 @@ import { AppModule } from './app/app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { HttpExceptionFilter } from './common/filter/exception.filter';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -19,6 +20,7 @@ async function bootstrap() {
 
   app.useGlobalFilters(new HttpExceptionFilter());
   app.enableCors();
+  app.use(cookieParser());
 
   // swagger 세팅
   const config = new DocumentBuilder()
@@ -26,6 +28,7 @@ async function bootstrap() {
     .setDescription('Eventory API description')
     .setVersion('1.0')
     .addTag('Eventory')
+    .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

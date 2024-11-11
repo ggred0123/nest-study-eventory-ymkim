@@ -10,13 +10,6 @@ export class CreateReviewPayload {
   eventId!: number;
 
   @IsInt()
-  @ApiProperty({
-    description: '유저 ID',
-    type: Number,
-  })
-  userId!: number;
-
-  @IsInt()
   @Min(1)
   @Max(5)
   @ApiProperty({

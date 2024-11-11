@@ -33,6 +33,7 @@
     - 모임은 시작 전/진행 중/종료의 3단계의 상태를 가집니다.
     - 모임의 수정/삭제는 시작 전까지만 호스트에 의해 가능합니다. 단, 참석자를 쫒아낼 수는 없습니다.
     - 모임 시작 전까지만 참가, 탈퇴가 가능합니다.
+    - (Week4 이후) 모임의 지역은 복수선택이 가능합니다.
 - 리뷰
     - 모임이 끝나면 참여자들은 리뷰를 작성할 수 있습니다.
     - 리뷰는 유저 당 하나만 남길 수 있습니다.
@@ -52,16 +53,18 @@
 링크를 통해 해당 Issue로 이동할 수 있습니다.
 
 - Auth 
-    - POST /sign-up **(Week5)**
-    - POST /login **(Week5)**
-    - POST /refresh **(Week5)**
+    - POST /sign-up [**(Week5)**](https://github.com/worjs/nest-study-eventory/issues/56)
+    - POST /login [**(Week5)**](https://github.com/worjs/nest-study-eventory/issues/57)
+    - POST /refresh [**(Week5)**](https://github.com/worjs/nest-study-eventory/issues/58)
+    - PUT /password [**(Week5-HW)**](https://github.com/worjs/nest-study-eventory/issues/66)
 - User
-    - GET /me **(Week5-HW)**
-    - GET /:userId **(Week5-HW)** 
+    - GET /:userId [**(Week5-HW)**](https://github.com/worjs/nest-study-eventory/issues/67)
+    - PATCH /:userId [**(Week5-HW)**](https://github.com/worjs/nest-study-eventory/issues/68)
     - DELETE /:userId [**(Week3)**](https://github.com/worjs/nest-study-eventory/issues/32)
+    - User가 Category를 복수선택할 수 있도록, Schema 변경(Migration) [**(Week4)**](https://github.com/worjs/nest-study-eventory/issues/51) => main이 아닌 db/user-category branch에서 확인 가능.
 - Event
     - GET / [**(Week2-HW)**](https://github.com/worjs/nest-study-eventory/issues/17)
-    - GET /me **(Week5-HW)**
+    - GET /me [**(Week5-HW)**](https://github.com/worjs/nest-study-eventory/issues/65)
     - GET /:eventId [**(Week2-HW)**](https://github.com/worjs/nest-study-eventory/issues/16)
     - POST / [**(Week2-HW)**](https://github.com/worjs/nest-study-eventory/issues/14)
     - PUT or PATCH /:eventId [**(Week3-HW)**](https://github.com/worjs/nest-study-eventory/issues/33)
@@ -69,6 +72,8 @@
     - POST /:eventId/join [**(Week2-HW)**](https://github.com/worjs/nest-study-eventory/issues/18)
     - POST /:eventId/out [**(Week2-HW)**](https://github.com/worjs/nest-study-eventory/issues/19)
     - **(필수)** User Soft Delete에 따른 Repository 구현 변경 [**(Week3-HW)**](https://github.com/worjs/nest-study-eventory/issues/36)
+    - Event가 City를 복수선택할 수 있도록, Schema 변경(Migration) [**(Week4-HW)**](https://github.com/worjs/nest-study-eventory/issues/51)
+    - Event 모듈에 인증 로직 반영 [**(Week5-HW)**](https://github.com/worjs/nest-study-eventory/issues/62)
 - Review
     - GET / [**(Week2)**](https://github.com/worjs/nest-study-eventory/issues/12)
     - GET /:reviewId [**(Week2)**](https://github.com/worjs/nest-study-eventory/issues/11)
@@ -76,6 +81,7 @@
     - PUT /:reviewId [**(Week3)**](https://github.com/worjs/nest-study-eventory/issues/28)
     - PATCH /:reviewId [**(Week3)**](https://github.com/worjs/nest-study-eventory/issues/29)
     - DELETE /:reviewId [**(Week3)**](https://github.com/worjs/nest-study-eventory/issues/30)
+    - Review 모듈에 인증 로직 반영 [**(Week5)**](https://github.com/worjs/nest-study-eventory/issues/63)
 - Region 
     - GET / [**(Week1)**](https://github.com/worjs/nest-study-eventory/issues/6)
       [**(Week2-HW)**](https://github.com/worjs/nest-study-eventory/issues/9)
@@ -88,7 +94,9 @@
 
 
 ## DB Schema
-아래는 Week3 기준 DB 스키마입니다. 역시 변경 가능성이 있습니다.
-![image](https://github.com/user-attachments/assets/32b8ca39-7759-4a2e-be13-0c50dfcaea5f)
+아래는 Week4 기준 DB 스키마입니다. 역시 변경 가능성이 있습니다.
+<img width="1155" alt="Screenshot 2024-11-06 at 5 22 11 PM" src="https://github.com/user-attachments/assets/d6fbc7cf-a31e-43af-af0b-ebdb735cb2c3">
+
+
 
 
