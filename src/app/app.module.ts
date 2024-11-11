@@ -6,12 +6,14 @@ import { LoggerMiddleware } from '../common/middlewares/logger.middleware';
 import { RegionModule } from '../region/region.module';
 import { CommonModule } from '../common/common.module';
 import { ReviewModule } from '../review/review.module';
+import { EventModule } from 'src/event/event.module';
 import { UserModule } from '../user/user.module';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
     AuthModule,
+    EventModule,
     configModule,
     RegionModule,
     CommonModule,
