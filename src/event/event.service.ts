@@ -147,7 +147,9 @@ export class EventService {
       throw new ConflictException('이미 시작된 이벤트는 나갈 수 없습니다.');
     }
 
-    await this.eventRepository.outEvent(eventId, userId, user);
+    await this.checkPermissionOfEvent(eventId, user.id);
+
+    await this.eventRepository.outEvent(eventId, userId);
   }
 
   async putUpdateEvent(
