@@ -119,16 +119,16 @@ export class EventService {
     await this.eventRepository.joinEvent(eventId, userId);
   }
 
-  async outEvent(eventId: number, userId: number): Promise<void> {
+  async outEvent(
+    eventId: number,
+    userId: number,
+    user: UserBaseInfo,
+  ): Promise<void> {
     const isUserJoinedEvent = await this.eventRepository.isUserJoinedEvent(
       userId,
       eventId,
     );
-    const user = await this.eventRepository.getUserById(userId);
-
-    if (!user) {
-      throw new NotFoundException('존재하지 않는 user입니다.');
-    }
+    await this.eventRepository.getUserById(userId);
 
     if (!isUserJoinedEvent) {
       throw new ConflictException('해당 유저가 참가하지 않은 이벤트입니다.');
@@ -147,7 +147,7 @@ export class EventService {
       throw new ConflictException('이미 시작된 이벤트는 나갈 수 없습니다.');
     }
 
-    await this.eventRepository.outEvent(eventId, userId);
+    await this.eventRepository.outEvent(eventId, userId, user);
   }
 
   async putUpdateEvent(
@@ -210,6 +210,8 @@ export class EventService {
       );
     }
 
+    await this.checkPermissionOfEvent(eventId, user.id);
+
     const updatedEvent = await this.eventRepository.updateEvent(
       eventId,
       updateData,
@@ -244,6 +246,8 @@ export class EventService {
     if (payload.maxPeople === null) {
       throw new BadRequestException('maxPeople은 null이 될 수 없습니다.');
     }
+
+    await this.checkPermissionOfEvent(eventId, user.id);
 
     const event = await this.eventRepository.getEventById(eventId);
 
@@ -328,7 +332,7 @@ export class EventService {
     return EventDto.from(updatedEvent);
   }
 
-  async deleteEvent(eventId: number): Promise<void> {
+  async deleteEvent(eventId: number, user: UserBaseInfo): Promise<void> {
     const event = await this.eventRepository.getEventById(eventId);
 
     if (!event) {
@@ -339,6 +343,20 @@ export class EventService {
       throw new ConflictException('이미 시작된 이벤트는 삭제할 수 없습니다.');
     }
 
-    await this.eventRepository.deleteEvent(eventId);
+    await this.checkPermissionOfEvent(eventId, user.id);
+
+    await this.eventRepository.deleteEvent(eventId, user);
+  }
+
+  private async checkPermissionOfEvent(eventId: number, userId: number) {
+    const event = await this.eventRepository.getEventById(eventId);
+
+    if (!event) {
+      throw new NotFoundException('Event가 존재하지 않습니다.');
+    }
+
+    if (event.hostId !== userId) {
+      throw new ConflictException('권한이 없습니다.');
+    }
   }
 }
