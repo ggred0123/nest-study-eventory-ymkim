@@ -1,6 +1,7 @@
 import { PrismaService } from '../common/services/prisma.service';
 import { Injectable } from '@nestjs/common';
 import { User } from '@prisma/client';
+import { UserData } from './type/user-data.type';
 
 @Injectable()
 export class UserRepository {
@@ -11,6 +12,21 @@ export class UserRepository {
       where: {
         id: userId,
         deletedAt: null,
+      },
+    });
+  }
+  async getUserInfoById(userId: number): Promise<UserData | null> {
+    return this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        birthday: true,
+        cityId: true,
+        categoryId: true,
       },
     });
   }

@@ -12,15 +12,19 @@ import { EventQuery } from './query/event.query';
 import { UpdateEventData } from './type/update-event-data.type';
 import { PatchUpdateEventPayload } from './payload/patch-update-event.payload';
 import { PutUpdateEventPayload } from './payload/put-update-event.payload';
+import { UserBaseInfo } from 'src/auth/type/user-base-info.type';
 
 @Injectable()
 export class EventService {
   constructor(private readonly eventRepository: EventRepository) {}
 
-  async createEvent(payload: CreateEventPayload): Promise<EventDto> {
-    const user = await this.eventRepository.getUserById(payload.hostId);
-    if (!user) {
-      throw new NotFoundException('host가 존재하지 않습니다.');
+  async createEvent(
+    payload: CreateEventPayload,
+    user: UserBaseInfo,
+  ): Promise<EventDto> {
+    const isUserExist = await this.eventRepository.getUserById(user.id);
+    if (!isUserExist) {
+      throw new NotFoundException('존재하지 않는 user입니다.');
     }
 
     const category = await this.eventRepository.getCategoryById(
@@ -149,6 +153,7 @@ export class EventService {
   async putUpdateEvent(
     eventId: number,
     payload: PutUpdateEventPayload,
+    user: UserBaseInfo,
   ): Promise<EventDto> {
     const event = await this.eventRepository.getEventById(eventId);
 
@@ -216,6 +221,7 @@ export class EventService {
   async patchUpdateEvent(
     eventId: number,
     payload: PatchUpdateEventPayload,
+    user: UserBaseInfo,
   ): Promise<EventDto> {
     if (payload.title === null) {
       throw new BadRequestException('title은 null이 될 수 없습니다.');

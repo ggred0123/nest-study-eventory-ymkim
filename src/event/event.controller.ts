@@ -10,9 +10,11 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { EventService } from './event.service';
 import {
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiNoContentResponse,
   ApiOkResponse,
@@ -25,6 +27,9 @@ import { EventParticipantPayload } from './payload/create-eventJoin.payload';
 import { EventQuery } from './query/event.query';
 import { PatchUpdateEventPayload } from './payload/patch-update-event.payload';
 import { PutUpdateEventPayload } from './payload/put-update-event.payload';
+import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
+import { CurrentUser } from 'src/auth/decorator/user.decorator';
+import { UserBaseInfo } from 'src/auth/type/user-base-info.type';
 
 @Controller('events')
 @ApiTags('Event API')
@@ -32,10 +37,15 @@ export class EventController {
   constructor(private readonly eventService: EventService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: '모임을 생성합니다' })
   @ApiCreatedResponse({ type: EventDto })
-  async createEvent(@Body() payload: CreateEventPayload): Promise<EventDto> {
-    return this.eventService.createEvent(payload);
+  async createEvent(
+    @Body() payload: CreateEventPayload,
+    @CurrentUser() user: UserBaseInfo,
+  ): Promise<EventDto> {
+    return this.eventService.createEvent(payload, user);
   }
 
   @Get(':eventId')
@@ -75,23 +85,29 @@ export class EventController {
   }
 
   @Patch(':eventId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: '모임을 수정합니다' })
   @ApiOkResponse({ type: EventDto })
   async patchUpdateEvent(
     @Param('eventId', ParseIntPipe) eventId: number,
     @Body() payload: PatchUpdateEventPayload,
+    @CurrentUser() user: UserBaseInfo,
   ): Promise<EventDto> {
-    return this.eventService.patchUpdateEvent(eventId, payload);
+    return this.eventService.patchUpdateEvent(eventId, payload, user);
   }
 
   @Put(':eventId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: '모임을 수정합니다' })
   @ApiOkResponse({ type: EventDto })
   async putUpdateEvent(
     @Param('eventId', ParseIntPipe) eventId: number,
     @Body() payload: PutUpdateEventPayload,
+    @CurrentUser() user: UserBaseInfo,
   ): Promise<EventDto> {
-    return this.eventService.putUpdateEvent(eventId, payload);
+    return this.eventService.putUpdateEvent(eventId, payload, user);
   }
 
   @Delete(':eventId')

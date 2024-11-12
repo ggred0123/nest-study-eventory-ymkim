@@ -5,6 +5,9 @@ import { UserRepository } from './user.repository';
 export class UserService {
   constructor(private readonly userRepository: UserRepository) {}
 
+  async getUserInfo(userId: number) {
+      
+  }
   async deleteUser(userId: number): Promise<void> {
     const user = await this.userRepository.getUserById(userId);
 
@@ -14,4 +17,6 @@ export class UserService {
 
     return this.userRepository.deleteUser(userId);
   }
+}
+
 }
