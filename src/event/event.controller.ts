@@ -75,13 +75,16 @@ export class EventController {
   }
 
   @Post(':eventId/out')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: '유저를 event에서 내보냅니다.' })
   @ApiNoContentResponse()
   async outEvent(
     @Param('eventId', ParseIntPipe) eventId: number,
     @Body() payload: EventParticipantPayload,
+    @CurrentUser() user: UserBaseInfo,
   ): Promise<void> {
-    return this.eventService.outEvent(eventId, payload.userId);
+    return this.eventService.outEvent(eventId, payload.userId, user);
   }
 
   @Patch(':eventId')
@@ -111,12 +114,15 @@ export class EventController {
   }
 
   @Delete(':eventId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @HttpCode(204)
   @ApiOperation({ summary: '모임을 삭제합니다.' })
   @ApiNoContentResponse()
   async deleteEvent(
     @Param('eventId', ParseIntPipe) eventId: number,
+    @CurrentUser() user: UserBaseInfo,
   ): Promise<void> {
-    return this.eventService.deleteEvent(eventId);
+    return this.eventService.deleteEvent(eventId, user);
   }
 }

@@ -5,6 +5,7 @@ import { EventData } from './type/event-data.type';
 import { User, Event, Category, City, EventJoin } from '@prisma/client';
 import { EventQuery } from './query/event.query';
 import { UpdateEventData } from './type/update-event-data.type';
+import { UserBaseInfo } from 'src/auth/type/user-base-info.type';
 
 @Injectable()
 export class EventRepository {
@@ -148,7 +149,11 @@ export class EventRepository {
     });
   }
 
-  async outEvent(eventId: number, userId: number): Promise<void> {
+  async outEvent(
+    eventId: number,
+    userId: number,
+    user: UserBaseInfo,
+  ): Promise<void> {
     await this.prisma.eventJoin.delete({
       where: {
         eventId_userId: {
@@ -267,7 +272,7 @@ export class EventRepository {
     return city.length === cityIds.length;
   }
 
-  async deleteEvent(eventId: number): Promise<void> {
+  async deleteEvent(eventId: number, user: UserBaseInfo): Promise<void> {
     await this.prisma.$transaction([
       this.prisma.eventJoin.deleteMany({
         where: {
