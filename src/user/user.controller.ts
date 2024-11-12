@@ -1,4 +1,11 @@
-import { Controller, Delete, HttpCode, Param, Get } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  HttpCode,
+  Param,
+  Get,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import {
   ApiNoContentResponse,
@@ -14,8 +21,10 @@ export class UserController {
   @Get(':userId')
   @ApiOperation({ summary: '유저 정보 조회' })
   @ApiOkResponse({ type: UserDto })
-  async getUserById(@Param('userId') userId: number): Promise<UserDto> {
-    return this.userService.getUserInfo(userId);
+  async getUserInfoById(
+    @Param('userId', ParseIntPipe) userId: number,
+  ): Promise<UserDto> {
+    return this.userService.getUserInfoById(userId);
   }
 
   @Delete(':userId')

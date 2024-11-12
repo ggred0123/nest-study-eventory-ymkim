@@ -27,6 +27,8 @@ export class UserRepository {
         birthday: true,
         cityId: true,
         categoryId: true,
+        password: false,
+        refreshToken: false,
       },
     });
   }
