@@ -82,9 +82,8 @@ export class EventDto {
 
   @ApiProperty({
     description: '이벤트 상태',
+    enum: EventStatus,
   })
-  @IsNotEmpty()
-  @IsEnum(Object.values(EventStatus))
   status!: EventStatus;
   //type으로 했더니 오류나서 이넘 처리하는거 스텍오버플로우에서 이렇게 하라구..
 
