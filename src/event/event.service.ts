@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -18,13 +19,11 @@ import { UserBaseInfo } from 'src/auth/type/user-base-info.type';
 export class EventService {
   constructor(private readonly eventRepository: EventRepository) {}
 
-  async createEvent(
-    payload: CreateEventPayload,
-    user: UserBaseInfo,
-  ): Promise<EventDto> {
-    const isUserExist = await this.eventRepository.getUserById(user.id);
-    if (!isUserExist) {
-      throw new NotFoundException('존재하지 않는 user입니다.');
+  async createEvent(payload: CreateEventPayload): Promise<EventDto> {
+    const user = await this.eventRepository.getUserById(payload.hostId);
+
+    if (!user) {
+      throw new NotFoundException('user가 존재하지 않습니다.');
     }
 
     const category = await this.eventRepository.getCategoryById(
@@ -85,16 +84,11 @@ export class EventService {
     return EventListDto.from(events);
   }
 
-  async joinEvent(eventId: number, userId: number): Promise<void> {
+  async joinEvent(eventId: number, user: UserBaseInfo): Promise<void> {
     const isUserJoinedEvent = await this.eventRepository.isUserJoinedEvent(
-      userId,
+      user.id,
       eventId,
     );
-    const user = await this.eventRepository.getUserById(userId);
-
-    if (!user) {
-      throw new NotFoundException('존재하지 않는 user입니다.');
-    }
 
     if (isUserJoinedEvent) {
       throw new ConflictException('해당 유저가 이미 참가한 이벤트입니다.');
@@ -116,19 +110,14 @@ export class EventService {
       throw new ConflictException('이미 정원이 다 찼습니다.');
     }
 
-    await this.eventRepository.joinEvent(eventId, userId);
+    await this.eventRepository.joinEvent(eventId, user.id);
   }
 
-  async outEvent(
-    eventId: number,
-    userId: number,
-    user: UserBaseInfo,
-  ): Promise<void> {
+  async outEvent(eventId: number, user: UserBaseInfo): Promise<void> {
     const isUserJoinedEvent = await this.eventRepository.isUserJoinedEvent(
-      userId,
+      user.id,
       eventId,
     );
-    await this.eventRepository.getUserById(userId);
 
     if (!isUserJoinedEvent) {
       throw new ConflictException('해당 유저가 참가하지 않은 이벤트입니다.');
@@ -139,7 +128,7 @@ export class EventService {
       throw new NotFoundException('Event가 존재하지 않습니다.');
     }
 
-    if (event.hostId === userId) {
+    if (event.hostId === user.id) {
       throw new ConflictException('host는 이벤트에서 나갈 수 없습니다.');
     }
 
@@ -149,7 +138,7 @@ export class EventService {
 
     await this.checkPermissionOfEvent(eventId, user.id);
 
-    await this.eventRepository.outEvent(eventId, userId);
+    await this.eventRepository.outEvent(eventId, user.id);
   }
 
   async putUpdateEvent(
@@ -347,7 +336,7 @@ export class EventService {
 
     await this.checkPermissionOfEvent(eventId, user.id);
 
-    await this.eventRepository.deleteEvent(eventId, user);
+    await this.eventRepository.deleteEvent(eventId);
   }
 
   private async checkPermissionOfEvent(eventId: number, userId: number) {
@@ -358,7 +347,7 @@ export class EventService {
     }
 
     if (event.hostId !== userId) {
-      throw new ConflictException('권한이 없습니다.');
+      throw new ForbiddenException('호스트가 아닙니다!');
     }
   }
 }

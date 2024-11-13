@@ -1,4 +1,12 @@
-import { IsDate, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import {
+  IsDate,
+  IsEmail,
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
@@ -12,7 +20,7 @@ export class PatchUpdateUserPayload {
   name?: string | null;
 
   @IsOptional()
-  @IsString()
+  @IsEmail()
   @ApiPropertyOptional({
     description: '유저 이메일',
     type: String,
@@ -25,6 +33,7 @@ export class PatchUpdateUserPayload {
   @ApiPropertyOptional({
     description: '유저 생일',
     type: Date,
+    nullable: true,
   })
   birthday?: Date | null;
 
@@ -33,6 +42,7 @@ export class PatchUpdateUserPayload {
   @ApiPropertyOptional({
     description: '도시 ID',
     type: Number,
+    nullable: true,
   })
   cityId?: number | null;
 

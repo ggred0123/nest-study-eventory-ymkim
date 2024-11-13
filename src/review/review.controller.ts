@@ -36,8 +36,6 @@ export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   @ApiOperation({ summary: '리뷰를 생성합니다' })
   @ApiCreatedResponse({ type: ReviewDto })
   async createReview(

@@ -33,7 +33,7 @@ export class UserController {
     @Param('userId', ParseIntPipe) userId: number,
     @CurrentUser() user: UserBaseInfo,
   ): Promise<UserDto> {
-    return this.userService.getUserInfoById(userId);
+    return this.userService.getUserInfoById(userId, user);
   }
 
   @Delete(':userId')

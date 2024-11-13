@@ -268,7 +268,7 @@ export class EventRepository {
     return city.length === cityIds.length;
   }
 
-  async deleteEvent(eventId: number, user: UserBaseInfo): Promise<void> {
+  async deleteEvent(eventId: number): Promise<void> {
     await this.prisma.$transaction([
       this.prisma.eventJoin.deleteMany({
         where: {

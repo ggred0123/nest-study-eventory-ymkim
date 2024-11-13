@@ -23,12 +23,14 @@ export class UserDto {
   @ApiProperty({
     description: '유저 생일',
     type: Date,
+    nullable: true,
   })
   birthday!: Date | null;
 
   @ApiProperty({
     description: '도시 ID',
     type: Number,
+    nullable: true,
   })
   cityId!: number | null;
 

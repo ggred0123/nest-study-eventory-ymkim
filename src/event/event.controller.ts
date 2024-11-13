@@ -37,15 +37,10 @@ export class EventController {
   constructor(private readonly eventService: EventService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   @ApiOperation({ summary: '모임을 생성합니다' })
   @ApiCreatedResponse({ type: EventDto })
-  async createEvent(
-    @Body() payload: CreateEventPayload,
-    @CurrentUser() user: UserBaseInfo,
-  ): Promise<EventDto> {
-    return this.eventService.createEvent(payload, user);
+  async createEvent(@Body() payload: CreateEventPayload): Promise<EventDto> {
+    return this.eventService.createEvent(payload);
   }
 
   @Get(':eventId')
@@ -65,13 +60,15 @@ export class EventController {
   }
 
   @Post(':eventId/join')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: '모임에 참가합니다' })
   @ApiNoContentResponse()
   async joinEvent(
     @Param('eventId', ParseIntPipe) eventId: number,
-    @Body() payload: EventParticipantPayload,
+    @CurrentUser() user: UserBaseInfo,
   ): Promise<void> {
-    return this.eventService.joinEvent(eventId, payload.userId);
+    return this.eventService.joinEvent(eventId, user);
   }
 
   @Post(':eventId/out')
@@ -81,10 +78,9 @@ export class EventController {
   @ApiNoContentResponse()
   async outEvent(
     @Param('eventId', ParseIntPipe) eventId: number,
-    @Body() payload: EventParticipantPayload,
     @CurrentUser() user: UserBaseInfo,
   ): Promise<void> {
-    return this.eventService.outEvent(eventId, payload.userId, user);
+    return this.eventService.outEvent(eventId, user);
   }
 
   @Patch(':eventId')
