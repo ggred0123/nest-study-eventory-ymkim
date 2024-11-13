@@ -129,7 +129,7 @@ model Club {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  host     User     @relation(fields: [hostId], references: [id])
+  lead     User     @relation(fields: [leadId], references: [id])
 
   clubJoin ClubJoin[]
   clubWaiting ClubWaiting[]
@@ -138,7 +138,7 @@ model Club {
   @@map("club")
 }
 
-enum Status {
+enum WaitingStatus {
   PENDING
   APPROVED
   REJECTED
@@ -148,7 +148,7 @@ model ClubWaiting {
   id        Int      @id @default(autoincrement())
   clubId    Int      @map("club_id")
   userId    Int      @map("user_id")
-  status    Status    
+  watingStatus    WaitingStatus    
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
