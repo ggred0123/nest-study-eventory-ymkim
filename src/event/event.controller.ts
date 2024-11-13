@@ -37,10 +37,14 @@ export class EventController {
   constructor(private readonly eventService: EventService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: '모임을 생성합니다' })
   @ApiCreatedResponse({ type: EventDto })
-  async createEvent(@Body() payload: CreateEventPayload): Promise<EventDto> {
-    return this.eventService.createEvent(payload);
+  async createEvent(
+    @Body() payload: CreateEventPayload,
+    @CurrentUser() user: UserBaseInfo,
+  ): Promise<EventDto> {
+    return this.eventService.createEvent(payload, user);
   }
 
   @Get(':eventId')

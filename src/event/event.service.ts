@@ -19,13 +19,10 @@ import { UserBaseInfo } from 'src/auth/type/user-base-info.type';
 export class EventService {
   constructor(private readonly eventRepository: EventRepository) {}
 
-  async createEvent(payload: CreateEventPayload): Promise<EventDto> {
-    const user = await this.eventRepository.getUserById(payload.hostId);
-
-    if (!user) {
-      throw new NotFoundException('user가 존재하지 않습니다.');
-    }
-
+  async createEvent(
+    payload: CreateEventPayload,
+    user: UserBaseInfo,
+  ): Promise<EventDto> {
     const category = await this.eventRepository.getCategoryById(
       payload.categoryId,
     );
@@ -53,7 +50,7 @@ export class EventService {
     }
 
     const createData: CreateEventData = {
-      hostId: payload.hostId,
+      hostId: user.id,
       title: payload.title,
       description: payload.description,
       cityIds: payload.cityIds,
@@ -136,8 +133,6 @@ export class EventService {
       throw new ConflictException('이미 시작된 이벤트는 나갈 수 없습니다.');
     }
 
-    await this.checkPermissionOfEvent(eventId, user.id);
-
     await this.eventRepository.outEvent(eventId, user.id);
   }
 
@@ -201,7 +196,7 @@ export class EventService {
       );
     }
 
-    await this.checkPermissionOfEvent(eventId, user.id);
+    await this.checkHostPermissionOfEvent(eventId, user.id);
 
     const updatedEvent = await this.eventRepository.updateEvent(
       eventId,
@@ -238,7 +233,7 @@ export class EventService {
       throw new BadRequestException('maxPeople은 null이 될 수 없습니다.');
     }
 
-    await this.checkPermissionOfEvent(eventId, user.id);
+    await this.checkHostPermissionOfEvent(eventId, user.id);
 
     const event = await this.eventRepository.getEventById(eventId);
 
@@ -334,12 +329,12 @@ export class EventService {
       throw new ConflictException('이미 시작된 이벤트는 삭제할 수 없습니다.');
     }
 
-    await this.checkPermissionOfEvent(eventId, user.id);
+    await this.checkHostPermissionOfEvent(eventId, user.id);
 
     await this.eventRepository.deleteEvent(eventId);
   }
 
-  private async checkPermissionOfEvent(eventId: number, userId: number) {
+  private async checkHostPermissionOfEvent(eventId: number, userId: number) {
     const event = await this.eventRepository.getEventById(eventId);
 
     if (!event) {

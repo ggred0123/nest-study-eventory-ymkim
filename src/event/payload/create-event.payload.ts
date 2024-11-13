@@ -11,13 +11,6 @@ import {
 import { Type } from 'class-transformer';
 
 export class CreateEventPayload {
-  @IsInt()
-  @ApiProperty({
-    description: '호스트 ID',
-    type: Number,
-  })
-  hostId!: number;
-
   @IsString()
   @ApiProperty({
     description: '모임 이름',
