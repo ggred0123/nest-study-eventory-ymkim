@@ -43,6 +43,26 @@ export class EventRepository {
             cityId: true,
           },
         },
+        eventJoin: {
+          select: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+        review: {
+          select: {
+            id: true,
+            eventId: true,
+            userId: true,
+            score: true,
+            title: true,
+            description: true,
+          },
+        },
         startTime: true,
         endTime: true,
         maxPeople: true,
@@ -179,6 +199,26 @@ export class EventRepository {
         startTime: true,
         endTime: true,
         maxPeople: true,
+        eventJoin: {
+          select: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+        review: {
+          select: {
+            id: true,
+            eventId: true,
+            userId: true,
+            score: true,
+            title: true,
+            description: true,
+          },
+        },
       },
     });
   }
@@ -200,6 +240,26 @@ export class EventRepository {
           select: {
             id: true,
             cityId: true,
+          },
+        },
+        eventJoin: {
+          select: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+        review: {
+          select: {
+            id: true,
+            eventId: true,
+            userId: true,
+            score: true,
+            title: true,
+            description: true,
           },
         },
         startTime: true,
@@ -247,6 +307,26 @@ export class EventRepository {
           select: {
             id: true,
             cityId: true,
+          },
+        },
+        eventJoin: {
+          select: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+        review: {
+          select: {
+            id: true,
+            eventId: true,
+            userId: true,
+            score: true,
+            title: true,
+            description: true,
           },
         },
         startTime: true,
