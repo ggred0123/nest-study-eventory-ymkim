@@ -11,6 +11,8 @@ import { SignUpData } from './type/sign-up-data.type';
 import { Tokens } from './type/tokens.type';
 import { TokenService } from './token.service';
 import { LoginPayload } from './payload/login.payload';
+import { PasswordChangePayload } from './payload/password-change.payload';
+import { UserBaseInfo } from './type/user-base-info.type';
 
 @Injectable()
 export class AuthService {
@@ -87,6 +89,30 @@ export class AuthService {
     if (user.refreshToken !== refreshToken) {
       throw new UnauthorizedException('유효하지 않은 토큰입니다.');
     }
+
+    return this.generateTokens(user.id);
+  }
+
+  async changePassword(
+    payload: PasswordChangePayload,
+    user: UserBaseInfo,
+  ): Promise<Tokens> {
+    const isPasswordMatch = await this.passwordService.validatePassword(
+      payload.previousPassword,
+      user.password,
+    );
+
+    if (!isPasswordMatch) {
+      throw new ConflictException('기존 비밀번호가 일치하지 않습니다.');
+    }
+
+    const hashedPassword = await this.passwordService.getEncryptPassword(
+      payload.newPassword,
+    );
+
+    await this.authRepository.updateUser(user.id, {
+      password: hashedPassword,
+    });
 
     return this.generateTokens(user.id);
   }

@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -12,17 +13,16 @@ import { EventQuery } from './query/event.query';
 import { UpdateEventData } from './type/update-event-data.type';
 import { PatchUpdateEventPayload } from './payload/patch-update-event.payload';
 import { PutUpdateEventPayload } from './payload/put-update-event.payload';
+import { UserBaseInfo } from 'src/auth/type/user-base-info.type';
 
 @Injectable()
 export class EventService {
   constructor(private readonly eventRepository: EventRepository) {}
 
-  async createEvent(payload: CreateEventPayload): Promise<EventDto> {
-    const user = await this.eventRepository.getUserById(payload.hostId);
-    if (!user) {
-      throw new NotFoundException('host가 존재하지 않습니다.');
-    }
-
+  async createEvent(
+    payload: CreateEventPayload,
+    user: UserBaseInfo,
+  ): Promise<EventDto> {
     const category = await this.eventRepository.getCategoryById(
       payload.categoryId,
     );
@@ -50,7 +50,7 @@ export class EventService {
     }
 
     const createData: CreateEventData = {
-      hostId: payload.hostId,
+      hostId: user.id,
       title: payload.title,
       description: payload.description,
       cityIds: payload.cityIds,
@@ -63,6 +63,12 @@ export class EventService {
     const event = await this.eventRepository.createEvent(createData);
 
     return EventDto.from(event);
+  }
+
+  async getMyEvents(user: UserBaseInfo): Promise<EventListDto> {
+    const events = await this.eventRepository.getMyEvents(user.id);
+
+    return EventListDto.from(events);
   }
 
   async getEventByEventId(eventId: number): Promise<EventDto> {
@@ -81,16 +87,11 @@ export class EventService {
     return EventListDto.from(events);
   }
 
-  async joinEvent(eventId: number, userId: number): Promise<void> {
+  async joinEvent(eventId: number, user: UserBaseInfo): Promise<void> {
     const isUserJoinedEvent = await this.eventRepository.isUserJoinedEvent(
-      userId,
+      user.id,
       eventId,
     );
-    const user = await this.eventRepository.getUserById(userId);
-
-    if (!user) {
-      throw new NotFoundException('존재하지 않는 user입니다.');
-    }
 
     if (isUserJoinedEvent) {
       throw new ConflictException('해당 유저가 이미 참가한 이벤트입니다.');
@@ -112,19 +113,14 @@ export class EventService {
       throw new ConflictException('이미 정원이 다 찼습니다.');
     }
 
-    await this.eventRepository.joinEvent(eventId, userId);
+    await this.eventRepository.joinEvent(eventId, user.id);
   }
 
-  async outEvent(eventId: number, userId: number): Promise<void> {
+  async outEvent(eventId: number, user: UserBaseInfo): Promise<void> {
     const isUserJoinedEvent = await this.eventRepository.isUserJoinedEvent(
-      userId,
+      user.id,
       eventId,
     );
-    const user = await this.eventRepository.getUserById(userId);
-
-    if (!user) {
-      throw new NotFoundException('존재하지 않는 user입니다.');
-    }
 
     if (!isUserJoinedEvent) {
       throw new ConflictException('해당 유저가 참가하지 않은 이벤트입니다.');
@@ -135,7 +131,7 @@ export class EventService {
       throw new NotFoundException('Event가 존재하지 않습니다.');
     }
 
-    if (event.hostId === userId) {
+    if (event.hostId === user.id) {
       throw new ConflictException('host는 이벤트에서 나갈 수 없습니다.');
     }
 
@@ -143,12 +139,13 @@ export class EventService {
       throw new ConflictException('이미 시작된 이벤트는 나갈 수 없습니다.');
     }
 
-    await this.eventRepository.outEvent(eventId, userId);
+    await this.eventRepository.outEvent(eventId, user.id);
   }
 
   async putUpdateEvent(
     eventId: number,
     payload: PutUpdateEventPayload,
+    user: UserBaseInfo,
   ): Promise<EventDto> {
     const event = await this.eventRepository.getEventById(eventId);
 
@@ -205,6 +202,8 @@ export class EventService {
       );
     }
 
+    await this.checkHostPermissionOfEvent(eventId, user.id);
+
     const updatedEvent = await this.eventRepository.updateEvent(
       eventId,
       updateData,
@@ -216,6 +215,7 @@ export class EventService {
   async patchUpdateEvent(
     eventId: number,
     payload: PatchUpdateEventPayload,
+    user: UserBaseInfo,
   ): Promise<EventDto> {
     if (payload.title === null) {
       throw new BadRequestException('title은 null이 될 수 없습니다.');
@@ -238,6 +238,8 @@ export class EventService {
     if (payload.maxPeople === null) {
       throw new BadRequestException('maxPeople은 null이 될 수 없습니다.');
     }
+
+    await this.checkHostPermissionOfEvent(eventId, user.id);
 
     const event = await this.eventRepository.getEventById(eventId);
 
@@ -322,7 +324,7 @@ export class EventService {
     return EventDto.from(updatedEvent);
   }
 
-  async deleteEvent(eventId: number): Promise<void> {
+  async deleteEvent(eventId: number, user: UserBaseInfo): Promise<void> {
     const event = await this.eventRepository.getEventById(eventId);
 
     if (!event) {
@@ -333,6 +335,20 @@ export class EventService {
       throw new ConflictException('이미 시작된 이벤트는 삭제할 수 없습니다.');
     }
 
+    await this.checkHostPermissionOfEvent(eventId, user.id);
+
     await this.eventRepository.deleteEvent(eventId);
+  }
+
+  private async checkHostPermissionOfEvent(eventId: number, userId: number) {
+    const event = await this.eventRepository.getEventById(eventId);
+
+    if (!event) {
+      throw new NotFoundException('Event가 존재하지 않습니다.');
+    }
+
+    if (event.hostId !== userId) {
+      throw new ForbiddenException('호스트가 아닙니다!');
+    }
   }
 }
