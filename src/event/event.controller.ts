@@ -47,6 +47,15 @@ export class EventController {
     return this.eventService.createEvent(payload, user);
   }
 
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '내가 참가한 모임 정보를 가져옵니다' })
+  @ApiOkResponse({ type: EventListDto })
+  async getMyEvents(@CurrentUser() user: UserBaseInfo): Promise<EventListDto> {
+    return this.eventService.getMyEvents(user);
+  }
+
   @Get(':eventId')
   @ApiOperation({ summary: '모임 상세 정보를 가져옵니다' })
   @ApiOkResponse({ type: EventDto })

@@ -51,6 +51,34 @@ export class EventRepository {
     });
   }
 
+  async getMyEvents(userId: number): Promise<EventData[]> {
+    return this.prisma.event.findMany({
+      where: {
+        eventJoin: {
+          some: {
+            userId: userId,
+          },
+        },
+      },
+      select: {
+        id: true,
+        hostId: true,
+        title: true,
+        description: true,
+        categoryId: true,
+        eventCity: {
+          select: {
+            id: true,
+            cityId: true,
+          },
+        },
+        startTime: true,
+        endTime: true,
+        maxPeople: true,
+      },
+    });
+  }
+
   async getUserById(userId: number): Promise<User | null> {
     return this.prisma.user.findUnique({
       where: {

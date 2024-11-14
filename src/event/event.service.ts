@@ -65,6 +65,12 @@ export class EventService {
     return EventDto.from(event);
   }
 
+  async getMyEvents(user: UserBaseInfo): Promise<EventListDto> {
+    const events = await this.eventRepository.getMyEvents(user.id);
+
+    return EventListDto.from(events);
+  }
+
   async getEventByEventId(eventId: number): Promise<EventDto> {
     const event = await this.eventRepository.getEventById(eventId);
 
