@@ -12,8 +12,9 @@ export class ClubEventDto {
   @ApiProperty({
     description: '클럽 ID',
     type: Number,
+    nullable: true,
   })
-  clubId!: number;
+  clubId!: number | null;
 
   @ApiProperty({
     description: '모임 ID',
@@ -67,7 +68,7 @@ export class ClubEventDto {
     return {
       hostId: event.hostId,
       id: event.id,
-      clubId: event.club.id,
+      clubId: event.club ? event.club.id : null,
       title: event.title,
       description: event.description,
       categoryId: event.categoryId,

@@ -13,7 +13,9 @@ import { ClubQuery } from './query/club.query';
 import { UpdateClubData } from './type/update-club-data.type';
 import { PatchUpdateClubPayload } from './payload/patch-update-club.payload';
 import { UserBaseInfo } from 'src/auth/type/user-base-info.type';
-
+import { CreateEventPayload } from 'src/event/payload/create-event.payload';
+import { ClubEventDto } from './dto/club-event.dto';
+import { CreateClubEventData } from './type/create-club-event-data.type';
 @Injectable()
 export class ClubService {
   constructor(private readonly clubRepository: ClubRepository) {}
@@ -32,6 +34,36 @@ export class ClubService {
     const club = await this.clubRepository.createClub(createData);
 
     return ClubDto.from(club);
+  }
+
+  async createClubEvent(
+    clubId: number,
+    payload: CreateEventPayload,
+    user: UserBaseInfo,
+  ): Promise<ClubEventDto> {
+    const isUserJoinedClub = await this.clubRepository.isUserJoinedClub(
+      user.id,
+      clubId,
+    );
+    if (!isUserJoinedClub) {
+      throw new ConflictException('해당 유저가 참가하지 않은 클럽입니다.');
+    }
+
+    const createData: CreateClubEventData = {
+      hostId: user.id,
+      clubId: clubId,
+      title: payload.title,
+      description: payload.description,
+      cityIds: payload.cityIds,
+      categoryId: payload.categoryId,
+      startTime: payload.startTime,
+      endTime: payload.endTime,
+      maxPeople: payload.maxPeople,
+    };
+
+    const event = await this.clubRepository.createClubEvent(createData);
+
+    return ClubEventDto.from(event);
   }
 
   async getClubByClubId(clubId: number): Promise<ClubDto> {

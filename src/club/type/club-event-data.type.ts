@@ -13,5 +13,5 @@ export type ClubEventData = {
   }[];
   club: {
     id: number;
-  };
+  } | null;
 };
