@@ -34,52 +34,6 @@ export class ClubRepository {
     });
   }
 
-  async createClubEvent(data: CreateClubEventData): Promise<ClubEventData> {
-    return this.prisma.event.create({
-      data: {
-        hostId: data.hostId,
-        clubId: data.clubId,
-        title: data.title,
-        description: data.description,
-        categoryId: data.categoryId,
-        startTime: data.startTime,
-        endTime: data.endTime,
-        maxPeople: data.maxPeople,
-        eventJoin: {
-          create: {
-            userId: data.hostId,
-          },
-        },
-        eventCity: {
-          create: data.cityIds.map((cityId) => ({
-            cityId: cityId,
-          })),
-        },
-      },
-      select: {
-        id: true,
-        hostId: true,
-        title: true,
-        description: true,
-        categoryId: true,
-        eventCity: {
-          select: {
-            id: true,
-            cityId: true,
-          },
-        },
-        club: {
-          select: {
-            id: true,
-          },
-        },
-        startTime: true,
-        endTime: true,
-        maxPeople: true,
-      },
-    });
-  }
-
   async getUserById(userId: number): Promise<User | null> {
     return this.prisma.user.findUnique({
       where: {

@@ -65,19 +65,6 @@ export class ClubController {
   }
   */
 
-  @Post(':ClubId')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: '클럽 안에 모임을 만듭니다.' })
-  @ApiCreatedResponse({ type: EventDto })
-  async createClubEvent(
-    @Param('ClubId', ParseIntPipe) clubId: number,
-    @Body() payload: CreateEventPayload,
-    @CurrentUser() user: UserBaseInfo,
-  ): Promise<EventDto> {
-    return this.ClubService.createClubEvent(clubId, payload, user);
-  }
-
   @Post(':ClubId/join')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()

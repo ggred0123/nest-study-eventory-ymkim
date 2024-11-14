@@ -36,36 +36,6 @@ export class ClubService {
     return ClubDto.from(club);
   }
 
-  async createClubEvent(
-    clubId: number,
-    payload: CreateEventPayload,
-    user: UserBaseInfo,
-  ): Promise<ClubEventDto> {
-    const isUserJoinedClub = await this.clubRepository.isUserJoinedClub(
-      user.id,
-      clubId,
-    );
-    if (!isUserJoinedClub) {
-      throw new ConflictException('해당 유저가 참가하지 않은 클럽입니다.');
-    }
-
-    const createData: CreateClubEventData = {
-      hostId: user.id,
-      clubId: clubId,
-      title: payload.title,
-      description: payload.description,
-      cityIds: payload.cityIds,
-      categoryId: payload.categoryId,
-      startTime: payload.startTime,
-      endTime: payload.endTime,
-      maxPeople: payload.maxPeople,
-    };
-
-    const event = await this.clubRepository.createClubEvent(createData);
-
-    return ClubEventDto.from(event);
-  }
-
   async getClubByClubId(clubId: number): Promise<ClubDto> {
     const club = await this.clubRepository.getClubById(clubId);
 

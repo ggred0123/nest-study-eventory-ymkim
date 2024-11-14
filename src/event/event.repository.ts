@@ -44,6 +44,11 @@ export class EventRepository {
             cityId: true,
           },
         },
+        club: {
+          select: {
+            id: true,
+          },
+        },
         startTime: true,
         endTime: true,
         maxPeople: true,
@@ -70,6 +75,11 @@ export class EventRepository {
           select: {
             id: true,
             cityId: true,
+          },
+        },
+        club: {
+          select: {
+            id: true,
           },
         },
         startTime: true,
@@ -139,6 +149,17 @@ export class EventRepository {
 
     return !!event;
   }
+
+  async isEventInClub(eventId: number): Promise<boolean> {
+    const event = await this.prisma.event.findUnique({
+      where: {
+        id: eventId,
+      },
+    });
+
+    return event ? !!event.clubId : false;
+  }
+
   async joinEvent(eventId: number, userId: number): Promise<void> {
     await this.prisma.eventJoin.create({
       data: {
@@ -205,6 +226,11 @@ export class EventRepository {
             cityId: true,
           },
         },
+        club: {
+          select: {
+            id: true,
+          },
+        },
         startTime: true,
         endTime: true,
         maxPeople: true,
@@ -229,6 +255,11 @@ export class EventRepository {
           select: {
             id: true,
             cityId: true,
+          },
+        },
+        club: {
+          select: {
+            id: true,
           },
         },
         startTime: true,
@@ -276,6 +307,11 @@ export class EventRepository {
           select: {
             id: true,
             cityId: true,
+          },
+        },
+        club: {
+          select: {
+            id: true,
           },
         },
         startTime: true,

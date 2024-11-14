@@ -6,6 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { EventRepository } from './event.repository';
+import { ClubRepository } from '../club/club.repository';
 import { CreateEventPayload } from './payload/create-event.payload';
 import { EventDto, EventListDto } from './dto/event.dto';
 import { CreateEventData } from './type/create-event-data.type';
@@ -17,7 +18,10 @@ import { UserBaseInfo } from 'src/auth/type/user-base-info.type';
 
 @Injectable()
 export class EventService {
-  constructor(private readonly eventRepository: EventRepository) {}
+  constructor(
+    private readonly eventRepository: EventRepository,
+    private readonly clubRepository: ClubRepository,
+  ) {}
 
   async createEvent(
     payload: CreateEventPayload,
@@ -52,6 +56,7 @@ export class EventService {
     const createData: CreateEventData = {
       hostId: user.id,
       title: payload.title,
+      clubId: payload.clubId,
       description: payload.description,
       cityIds: payload.cityIds,
       categoryId: payload.categoryId,
@@ -101,6 +106,18 @@ export class EventService {
 
     if (!event) {
       throw new NotFoundException('Event가 존재하지 않습니다.');
+    }
+
+    if (event.club) {
+      const isUserJoinedClub = await this.clubRepository.isUserJoinedClub(
+        event.club.id,
+        user.id,
+      );
+      if (!isUserJoinedClub) {
+        throw new ConflictException(
+          '해당 유저가 참가하지 않은 클럽에서 만들어진 모임입니다.',
+        );
+      }
     }
 
     if (event.endTime < new Date()) {
