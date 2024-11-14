@@ -38,6 +38,7 @@ export class EventController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: '모임을 생성합니다' })
   @ApiCreatedResponse({ type: EventDto })
   async createEvent(
