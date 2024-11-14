@@ -9,12 +9,14 @@ import { ReviewModule } from '../review/review.module';
 import { EventModule } from 'src/event/event.module';
 import { UserModule } from '../user/user.module';
 import { AuthModule } from '../auth/auth.module';
+import { ClubModule } from '../club/club.module';
 
 @Module({
   imports: [
     AuthModule,
     EventModule,
     configModule,
+    ClubModule,
     RegionModule,
     CommonModule,
     ReviewModule,
