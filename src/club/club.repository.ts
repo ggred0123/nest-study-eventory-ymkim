@@ -323,7 +323,7 @@ export class ClubRepository {
       },
     });
   }
-  async deleteEventsinClub(eventId: number): Promise<void> {
+  async deleteEvent(eventId: number): Promise<void> {
     await this.prisma.$transaction([
       this.prisma.eventJoin.deleteMany({
         where: {
@@ -351,7 +351,7 @@ export class ClubRepository {
 
     return clubWaiting.map((clubWaiting) => clubWaiting.userId);
   }
-  async IsUserWaitingClub(clubId: number, userId: number): Promise<boolean> {
+  async isUserWaitingClub(clubId: number, userId: number): Promise<boolean> {
     const clubWaiting = await this.prisma.clubWaiting.findUnique({
       where: {
         clubId_userId: {

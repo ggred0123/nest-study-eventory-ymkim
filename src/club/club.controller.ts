@@ -118,19 +118,6 @@ export class ClubController {
     );
   }
 
-  @Post(':clubId/')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: '클럽리더를 변경합니다.' })
-  @ApiNoContentResponse()
-  async changeClubLead(
-    @Param('clubId', ParseIntPipe) clubId: number,
-    @Body('userId', ParseIntPipe) userId: number,
-    @CurrentUser() user: UserBaseInfo,
-  ): Promise<void> {
-    return this.ClubService.changeClubLead(clubId, userId, user);
-  }
-
   @Delete(':clubId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
