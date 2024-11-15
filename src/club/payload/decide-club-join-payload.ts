@@ -1,13 +1,21 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDate, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import {
+  IsBoolean,
+  IsDate,
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
 import { min } from 'lodash';
 import { Type } from 'class-transformer';
 
 export class DecideClubJoinPayload {
-  @IsString()
+  @IsBoolean()
   @ApiProperty({
     description: '참가 여부 결정',
-    type: String,
+    type: Boolean,
   })
-  decision!: string;
+  approve!: boolean;
 }

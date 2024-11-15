@@ -208,6 +208,21 @@ export class EventRepository {
       },
     });
   }
+  async isUserJoinedClub(userId: number, clubId: number): Promise<boolean> {
+    const Club = await this.prisma.clubJoin.findUnique({
+      where: {
+        clubId_userId: {
+          clubId,
+          userId,
+        },
+        user: {
+          deletedAt: null,
+        },
+      },
+    });
+
+    return !!Club;
+  }
 
   async getEventById(id: number): Promise<EventData | null> {
     return this.prisma.event.findUnique({

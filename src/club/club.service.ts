@@ -16,6 +16,7 @@ import { UserBaseInfo } from 'src/auth/type/user-base-info.type';
 import { CreateEventPayload } from 'src/event/payload/create-event.payload';
 import { ClubEventDto } from './dto/club-event.dto';
 import { CreateClubEventData } from './type/create-club-event-data.type';
+import { EventRepository } from 'src/event/event.repository';
 @Injectable()
 export class ClubService {
   constructor(private readonly clubRepository: ClubRepository) {}
@@ -59,19 +60,13 @@ export class ClubService {
     );
 
     if (isUserJoinedClub) {
-      throw new ConflictException('해당 유저가 이미 참가한 이벤트입니다.');
+      throw new ConflictException('해당 유저가 이미 참가한 클럽입니다.');
     }
 
     const club = await this.clubRepository.getClubById(clubId);
 
     if (!club) {
       throw new NotFoundException('Club가 존재하지 않습니다.');
-    }
-
-    const currentPeople = await this.clubRepository.getClubJoinCount(clubId);
-
-    if (club.maxPeople == currentPeople) {
-      throw new ConflictException('이미 정원이 다 찼습니다.');
     }
 
     await this.clubRepository.joinClubWaiting(clubId, user.id);
@@ -84,7 +79,7 @@ export class ClubService {
     );
 
     if (!isUserJoinedClub) {
-      throw new ConflictException('해당 유저가 참가하지 않은 이벤트입니다.');
+      throw new ConflictException('해당 유저가 참가하지 않은 클럽입니다.');
     }
 
     const club = await this.clubRepository.getClubById(clubId);
@@ -93,40 +88,30 @@ export class ClubService {
     }
 
     if (club.leadId === user.id) {
-      throw new ConflictException('host는 이벤트에서 나갈 수 없습니다.');
+      throw new ConflictException('lead는 클럽에서 나갈 수 없습니다.');
+    }
+
+    const events = await this.clubRepository.getMyEvents(user.id);
+    for (let i = 0; i < events.length; i++) {
+      if (events[i].club && events[i].club?.id === clubId) {
+        await this.outOrDeleteEvent(events[i].id, user.id);
+      }
     }
 
     await this.clubRepository.outClub(clubId, user.id);
   }
 
-  async changeClubLead(
-    clubId: number,
-    userId: number,
-    user: UserBaseInfo,
-  ): Promise<void> {
-    const club = await this.clubRepository.getClubById(clubId);
-
-    if (!club) {
-      throw new NotFoundException('Club가 존재하지 않습니다.');
-    }
-    const isUserJoinedClub = await this.clubRepository.isUserJoinedClub(
-      userId,
-      clubId,
-    );
-
-    if (!isUserJoinedClub) {
-      throw new ConflictException('해당 유저가 참가하지 않은 클럽입니다.');
-    }
-
-    await this.checkLeadPermissionOfClub(clubId, user.id);
-
-    await this.clubRepository.changeClubLead(clubId, userId);
+  async outOrDeleteEvent(eventId: number, userId: number): Promise<void> {
+    const event = await this.clubRepository.getEventByEventId(eventId);
+    if (event?.hostId === userId) {
+      await this.clubRepository.deleteEvent(eventId);
+    } else await this.clubRepository.outEvent(eventId, userId);
   }
 
-  async decideClubJoin(
+  async approveClubJoin(
     clubId: number,
     userId: number,
-    decision: string,
+    approve: boolean,
     user: UserBaseInfo,
   ): Promise<void> {
     const club = await this.clubRepository.getClubById(clubId);
@@ -135,7 +120,7 @@ export class ClubService {
       throw new NotFoundException('Club가 존재하지 않습니다.');
     }
 
-    const IsUserWaitingClub = await this.clubRepository.IsUserWaitingClub(
+    const IsUserWaitingClub = await this.clubRepository.isUserWaitingClub(
       clubId,
       userId,
     );
@@ -145,12 +130,10 @@ export class ClubService {
 
     await this.checkLeadPermissionOfClub(clubId, user.id);
 
-    if (decision === 'reject') {
+    if (!approve) {
       await this.clubRepository.rejectClubJoin(clubId, userId);
-    } else if (decision === 'approve') {
-      await this.clubRepository.approveClubJoin(clubId, userId);
     } else {
-      throw new BadRequestException('잘못된 요청입니다.');
+      await this.clubRepository.approveClubJoin(clubId, userId);
     }
   }
 
@@ -174,14 +157,16 @@ export class ClubService {
     if (!club) {
       throw new NotFoundException('Club가 존재하지 않습니다.');
     }
+    if (club.leadId !== user.id) {
+      throw new ForbiddenException('리드가 아닙니다!');
+    }
 
     const updateData: UpdateClubData = {
       name: payload.name,
+      leadId: user.id,
       description: payload.description,
       maxPeople: payload.maxPeople,
     };
-
-    await this.checkLeadPermissionOfClub(clubId, user.id);
 
     const clubJoinCount = await this.clubRepository.getClubJoinCount(clubId);
 
@@ -208,17 +193,25 @@ export class ClubService {
     await this.checkLeadPermissionOfClub(clubId, user.id);
 
     await this.clubRepository.deleteClub(clubId);
+
+    const events = await this.clubRepository.getEventsByClubId(clubId);
+    for (let i = 0; i < events.length; i++) {
+      if (events[i].club && events[i].club?.id === clubId) {
+        await this.clubRepository.deleteEvent(events[i].id);
+      }
+    }
+    await this.clubRepository.deleteClub(clubId);
   }
 
   private async checkLeadPermissionOfClub(clubId: number, userId: number) {
     const club = await this.clubRepository.getClubById(clubId);
 
     if (!club) {
-      throw new NotFoundException('Event가 존재하지 않습니다.');
+      throw new NotFoundException('club가 존재하지 않습니다.');
     }
 
     if (club.leadId !== userId) {
-      throw new ForbiddenException('호스트가 아닙니다!');
+      throw new ForbiddenException('리드가 아닙니다!');
     }
   }
 }

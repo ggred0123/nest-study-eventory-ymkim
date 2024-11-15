@@ -14,6 +14,14 @@ export class PatchUpdateClubPayload {
   @IsOptional()
   @IsString()
   @ApiPropertyOptional({
+    description: '새 리드 id',
+    type: Number,
+  })
+  leadId?: number | null;
+
+  @IsOptional()
+  @IsString()
+  @ApiPropertyOptional({
     description: '클럽 설명',
     type: String,
   })

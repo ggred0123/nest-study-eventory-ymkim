@@ -18,10 +18,7 @@ import { UserBaseInfo } from 'src/auth/type/user-base-info.type';
 
 @Injectable()
 export class EventService {
-  constructor(
-    private readonly eventRepository: EventRepository,
-    private readonly clubRepository: ClubRepository,
-  ) {}
+  constructor(private readonly eventRepository: EventRepository) {}
 
   async createEvent(
     payload: CreateEventPayload,
@@ -109,7 +106,7 @@ export class EventService {
     }
 
     if (event.club) {
-      const isUserJoinedClub = await this.clubRepository.isUserJoinedClub(
+      const isUserJoinedClub = await this.eventRepository.isUserJoinedClub(
         event.club.id,
         user.id,
       );

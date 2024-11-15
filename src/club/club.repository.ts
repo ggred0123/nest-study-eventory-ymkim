@@ -2,11 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/services/prisma.service';
 import { CreateClubData } from './type/create-club-data.type';
 import { ClubData } from './type/club-data.type';
-import { User, Club, ClubJoin } from '@prisma/client';
+import { User, Club, ClubJoin, WaitingStatus } from '@prisma/client';
 import { ClubQuery } from './query/club.query';
 import { UpdateClubData } from './type/update-club-data.type';
 import { CreateClubEventData } from './type/create-club-event-data.type';
 import { ClubEventData } from './type/club-event-data.type';
+import { EventData } from 'src/event/type/event-data.type';
 @Injectable()
 export class ClubRepository {
   constructor(private readonly prisma: PrismaService) {}
@@ -47,11 +48,71 @@ export class ClubRepository {
     const ClubWaiting = await this.prisma.clubWaiting.findMany({
       where: {
         clubId: ClubId,
-        status: 'PENDING',
+        status: WaitingStatus.PENDING,
       },
     });
 
     return ClubWaiting.map((clubWaiting) => clubWaiting.userId);
+  }
+  async outEvent(eventId: number, userId: number): Promise<void> {
+    await this.prisma.eventJoin.delete({
+      where: {
+        eventId_userId: {
+          eventId,
+          userId,
+        },
+      },
+    });
+  }
+  async getEventByEventId(eventId: number): Promise<EventData | null> {
+    return this.prisma.event.findUnique({
+      where: {
+        id: eventId,
+      },
+      select: {
+        id: true,
+        hostId: true,
+        title: true,
+        description: true,
+        categoryId: true,
+        eventCity: {
+          select: {
+            id: true,
+            cityId: true,
+          },
+        },
+        club: {
+          select: {
+            id: true,
+          },
+        },
+        startTime: true,
+        endTime: true,
+        maxPeople: true,
+      },
+    });
+  }
+
+  async getEventListByUserId(userId: number): Promise<number[]> {
+    const eventJoin = await this.prisma.eventJoin.findMany({
+      where: {
+        userId: userId,
+      },
+    });
+
+    return eventJoin.map((eventJoin) => eventJoin.eventId);
+  }
+  async checkEventMadeInClub(
+    eventId: number,
+    clubId: number,
+  ): Promise<boolean> {
+    const event = await this.prisma.event.findUnique({
+      where: {
+        id: eventId,
+      },
+    });
+
+    return event?.clubId === clubId;
   }
 
   async isClubExist(id: number): Promise<boolean> {
@@ -115,10 +176,93 @@ export class ClubRepository {
     return this.prisma.clubJoin.count({
       where: {
         clubId,
+        user: {
+          deletedAt: null,
+        },
+      },
+    });
+  }
+  async isUserJoinedEvent(userId: number, eventId: number): Promise<boolean> {
+    const event = await this.prisma.eventJoin.findUnique({
+      where: {
+        eventId_userId: {
+          eventId,
+          userId,
+        },
+        user: {
+          deletedAt: null,
+        },
+      },
+    });
+    return !!event;
+  }
+
+  async getMyEvents(userId: number): Promise<EventData[]> {
+    return this.prisma.event.findMany({
+      where: {
+        eventJoin: {
+          some: {
+            userId: userId,
+          },
+        },
+      },
+      select: {
+        id: true,
+        hostId: true,
+        title: true,
+        description: true,
+        categoryId: true,
+        eventCity: {
+          select: {
+            id: true,
+            cityId: true,
+          },
+        },
+        club: {
+          select: {
+            id: true,
+          },
+        },
+        startTime: true,
+        endTime: true,
+        maxPeople: true,
+      },
+    });
+  }
+  async getEventsByClubId(clubId: number): Promise<EventData[]> {
+    return this.prisma.event.findMany({
+      where: {
+        clubId: clubId,
+      },
+      select: {
+        id: true,
+        hostId: true,
+        title: true,
+        description: true,
+        categoryId: true,
+        eventCity: {
+          select: {
+            id: true,
+            cityId: true,
+          },
+        },
+        club: {
+          select: {
+            id: true,
+          },
+        },
+        startTime: true,
+        endTime: true,
+        maxPeople: true,
       },
     });
   }
 
+  /* 일단 그 유저가 참가한 클럽 내 모임..그러니까 탈퇴 하려면 그 유저가 만약에 클럽 내 모임에 있으면 그 모임에서도 탈퇴 시켜야하는거지..
+  내가 가지고 있는거 어떤 유저가 이벤트에 참가 했냐 아니냐. 그럼 그 이벤트가 클럽 내에서 만들어졌는지 확인하고 그 이벤트에 유저가 참여했는지 봐야하는거지.
+  왜냐하면 어떤 클럽에서 나가면 그 클럽에서 만들어진 모임들에 대해 다 탈퇴해야되니까.
+
+  */
   async outClub(clubId: number, userId: number): Promise<void> {
     await this.prisma.clubJoin.delete({
       where: {
@@ -178,6 +322,25 @@ export class ClubRepository {
         maxPeople: true,
       },
     });
+  }
+  async deleteEventsinClub(eventId: number): Promise<void> {
+    await this.prisma.$transaction([
+      this.prisma.eventJoin.deleteMany({
+        where: {
+          eventId: eventId,
+        },
+      }),
+      this.prisma.eventCity.deleteMany({
+        where: {
+          eventId: eventId,
+        },
+      }),
+      this.prisma.event.delete({
+        where: {
+          id: eventId,
+        },
+      }),
+    ]);
   }
   async getClubWaitingList(clubId: number): Promise<number[]> {
     const clubWaiting = await this.prisma.clubWaiting.findMany({
