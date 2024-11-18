@@ -10,7 +10,8 @@ import { CreateClubPayload } from './payload/create-club.payload';
 import { ClubDto, ClubListDto } from './dto/club.dto';
 import { CreateClubData } from './type/create-club-data.type';
 import { UserBaseInfo } from 'src/auth/type/user-base-info.type';
-
+import { UpdateClubData } from './type/update-club-data.type';
+import { PatchUpdateClubPayload } from './payload/patch-update-club.payload';
 @Injectable()
 export class ClubService {
   constructor(private readonly clubRepository: ClubRepository) {}
@@ -77,6 +78,52 @@ export class ClubService {
     } else {
       await this.clubRepository.approveClubJoin(clubId, userId);
     }
+  }
+  async patchUpdateClub(
+    clubId: number,
+    payload: PatchUpdateClubPayload,
+    user: UserBaseInfo,
+  ): Promise<ClubDto> {
+    if (payload.name === null) {
+      throw new BadRequestException('title은 null이 될 수 없습니다.');
+    }
+    if (payload.description === null) {
+      throw new BadRequestException('description은 null이 될 수 없습니다.');
+    }
+    if (payload.maxPeople === null) {
+      throw new BadRequestException('maxPeople은 null이 될 수 없습니다.');
+    }
+
+    const club = await this.clubRepository.getClubById(clubId);
+
+    if (!club) {
+      throw new NotFoundException('Club가 존재하지 않습니다.');
+    }
+    if (club.leadId !== user.id) {
+      throw new ForbiddenException('리드가 아닙니다!');
+    }
+
+    const updateData: UpdateClubData = {
+      name: payload.name,
+      leadId: user.id,
+      description: payload.description,
+      maxPeople: payload.maxPeople,
+    };
+
+    const clubJoinCount = await this.clubRepository.getClubJoinCount(clubId);
+
+    if (payload.maxPeople && payload.maxPeople < clubJoinCount) {
+      throw new ConflictException(
+        '정원을 현재 참가자 수보다 작게 수정할 수 없습니다.',
+      );
+    }
+
+    const updatedClub = await this.clubRepository.updateClub(
+      clubId,
+      updateData,
+    );
+
+    return ClubDto.from(updatedClub);
   }
 
   private async checkLeadPermissionOfClub(clubId: number, userId: number) {

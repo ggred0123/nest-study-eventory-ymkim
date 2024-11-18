@@ -27,6 +27,7 @@ import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { UserBaseInfo } from 'src/auth/type/user-base-info.type';
 import { CurrentUser } from 'src/auth/decorator/user.decorator';
 import { ApproveClubJoinPayload } from './payload/approve-club-join.payload';
+import { PatchUpdateClubPayload } from './payload/patch-update-club.payload';
 @Controller('clubs')
 @ApiTags('Club API')
 export class ClubController {
@@ -61,7 +62,7 @@ export class ClubController {
   @ApiBearerAuth()
   @ApiOperation({ summary: '클럽 참여를 결정합니다.' })
   @ApiNoContentResponse()
-  async decideClubJoin(
+  async approveClubJoin(
     @Param('clubId', ParseIntPipe) clubId: number,
     @Body() payload: ApproveClubJoinPayload,
     @CurrentUser() user: UserBaseInfo,
@@ -72,5 +73,18 @@ export class ClubController {
       payload.approve,
       user,
     );
+  }
+
+  @Patch(':clubId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '클럽을 수정합니다' })
+  @ApiOkResponse({ type: ClubDto })
+  async patchUpdateClub(
+    @Param('clubId', ParseIntPipe) clubId: number,
+    @Body() payload: PatchUpdateClubPayload,
+    @CurrentUser() user: UserBaseInfo,
+  ): Promise<ClubDto> {
+    return this.ClubService.patchUpdateClub(clubId, payload, user);
   }
 }
