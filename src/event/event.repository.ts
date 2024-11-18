@@ -44,13 +44,17 @@ export class EventRepository {
             cityId: true,
           },
         },
+        club: {
+          select: {
+            id: true,
+          },
+        },
         startTime: true,
         endTime: true,
         maxPeople: true,
       },
     });
   }
-
   async getMyEvents(userId: number): Promise<EventData[]> {
     return this.prisma.event.findMany({
       where: {
@@ -70,6 +74,11 @@ export class EventRepository {
           select: {
             id: true,
             cityId: true,
+          },
+        },
+        club: {
+          select: {
+            id: true,
           },
         },
         startTime: true,
@@ -205,6 +214,11 @@ export class EventRepository {
             cityId: true,
           },
         },
+        club: {
+          select: {
+            id: true,
+          },
+        },
         startTime: true,
         endTime: true,
         maxPeople: true,
@@ -229,6 +243,11 @@ export class EventRepository {
           select: {
             id: true,
             cityId: true,
+          },
+        },
+        club: {
+          select: {
+            id: true,
           },
         },
         startTime: true,
@@ -276,6 +295,11 @@ export class EventRepository {
           select: {
             id: true,
             cityId: true,
+          },
+        },
+        club: {
+          select: {
+            id: true,
           },
         },
         startTime: true,
