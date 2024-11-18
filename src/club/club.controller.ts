@@ -83,4 +83,17 @@ export class ClubController {
   ): Promise<ClubDto> {
     return this.ClubService.patchUpdateClub(clubId, payload, user);
   }
+
+  @Patch(':clubId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '클럽을 수정합니다' })
+  @ApiOkResponse({ type: ClubDto })
+  async patchUpdateClub(
+    @Param('clubId', ParseIntPipe) clubId: number,
+    @Body() payload: PatchUpdateClubPayload,
+    @CurrentUser() user: UserBaseInfo,
+  ): Promise<ClubDto> {
+    return this.ClubService.patchUpdateClub(clubId, payload, user);
+  }
 }
