@@ -30,4 +30,23 @@ export class ClubService {
 
     return ClubDto.from(club);
   }
+
+  async joinClub(clubId: number, user: UserBaseInfo): Promise<void> {
+    const isUserJoinedClub = await this.clubRepository.isUserJoinedClub(
+      user.id,
+      clubId,
+    );
+
+    if (isUserJoinedClub) {
+      throw new ConflictException('해당 유저가 이미 참가한 클럽입니다.');
+    }
+
+    const club = await this.clubRepository.getClubById(clubId);
+
+    if (!club) {
+      throw new NotFoundException('Club가 존재하지 않습니다.');
+    }
+
+    await this.clubRepository.joinClubWaiting(clubId, user.id);
+  }
 }
