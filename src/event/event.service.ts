@@ -48,6 +48,15 @@ export class EventService {
         '시작 시간이 끝나는 시간보다 늦을 수 없습니다.',
       );
     }
+    if (payload.clubId !== null) {
+      const userInClub = await this.eventRepository.isUserInClub(
+        user.id,
+        payload.clubId,
+      );
+      if (!userInClub) {
+        throw new ForbiddenException('이 클럽에 속해있지 않습니다.');
+      }
+    }
 
     const createData: CreateEventData = {
       hostId: user.id,
