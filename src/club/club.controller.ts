@@ -64,6 +64,7 @@ export class ClubController {
   @ApiNoContentResponse()
   async decideClubJoin(
     @Param('clubId', ParseIntPipe) clubId: number,
+    @Param('userId', ParseIntPipe) userId: number,
     @Body() payload: ApproveClubJoinPayload,
     @CurrentUser() user: UserBaseInfo,
   ): Promise<void> {
