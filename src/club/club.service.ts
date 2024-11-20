@@ -40,6 +40,13 @@ export class ClubService {
     if (isUserJoinedClub) {
       throw new ConflictException('해당 유저가 이미 참가한 클럽입니다.');
     }
+    const userWaiting = await this.clubRepository.isUserWaitingClub(
+      user.id,
+      clubId,
+    );
+    if (userWaiting) {
+      throw new ConflictException('해당 유저가 이미 참가 신청한 클럽입니다.');
+    }
 
     const club = await this.clubRepository.getClubById(clubId);
 
