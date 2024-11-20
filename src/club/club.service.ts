@@ -106,7 +106,7 @@ export class ClubService {
 
     const updateData: UpdateClubData = {
       name: payload.name,
-      leadId: user.id,
+      leadId: payload.leadId ?? undefined,
       description: payload.description,
       maxPeople: payload.maxPeople,
     };
