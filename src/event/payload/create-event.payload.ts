@@ -25,8 +25,9 @@ export class CreateEventPayload {
   })
   cityIds!: number[];
 
+  @IsOptional()
   @IsInt()
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: '클럽 ID',
     type: Number,
     nullable: true,

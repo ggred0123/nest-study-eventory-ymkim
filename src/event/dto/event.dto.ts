@@ -68,7 +68,7 @@ export class EventDto {
     return {
       hostId: event.hostId,
       id: event.id,
-      clubId: event.club ? event.club.id : null,
+      clubId: event.club?.id ?? null,
       title: event.title,
       description: event.description,
       categoryId: event.categoryId,
