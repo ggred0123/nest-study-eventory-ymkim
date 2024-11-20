@@ -94,14 +94,7 @@ export class ClubService {
       throw new BadRequestException('maxPeople은 null이 될 수 없습니다.');
     }
 
-    const club = await this.clubRepository.getClubById(clubId);
-
-    if (!club) {
-      throw new NotFoundException('Club가 존재하지 않습니다.');
-    }
-    if (club.leadId !== user.id) {
-      throw new ForbiddenException('리드가 아닙니다!');
-    }
+    await this.checkLeadPermissionOfClub(clubId, user.id);
 
     const updateData: UpdateClubData = {
       name: payload.name,
