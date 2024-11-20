@@ -104,6 +104,18 @@ export class ClubService {
 
     await this.checkLeadPermissionOfClub(clubId, user.id);
 
+    if (payload.leadId) {
+      const userInClub = await this.clubRepository.isUserJoinedClub(
+        clubId,
+        payload.leadId,
+      );
+      if (!userInClub) {
+        throw new ConflictException(
+          '클럽 리드로 지정된 유저가 클럽에 가입되어 있지 않습니다.',
+        );
+      }
+    }
+
     const updateData: UpdateClubData = {
       name: payload.name,
       leadId: payload.leadId ?? undefined,
