@@ -151,7 +151,6 @@ export class ClubRepository {
       },
     });
   }
-
   async getClubJoinCount(clubId: number): Promise<number> {
     return this.prisma.clubJoin.count({
       where: {
@@ -184,34 +183,4 @@ export class ClubRepository {
     });
   }
 
-  async getClubJoinCount(clubId: number): Promise<number> {
-    return this.prisma.clubJoin.count({
-      where: {
-        clubId,
-        user: {
-          deletedAt: null,
-        },
-      },
-    });
-  }
-
-  async updateClub(clubId: number, data: UpdateClubData): Promise<ClubData> {
-    return this.prisma.club.update({
-      where: {
-        id: clubId,
-      },
-      data: {
-        name: data.name,
-        description: data.description,
-        maxPeople: data.maxPeople,
-      },
-      select: {
-        id: true,
-        leadId: true,
-        name: true,
-        description: true,
-        maxPeople: true,
-      },
-    });
-  }
-}
+ 
