@@ -47,7 +47,7 @@ export class ClubRepository {
   }
 
   async isUserJoinedClub(userId: number, clubId: number): Promise<boolean> {
-    const Club = await this.prisma.clubJoin.findUnique({
+    const clubExist = await this.prisma.clubJoin.findUnique({
       where: {
         clubId_userId: {
           clubId,
@@ -59,7 +59,7 @@ export class ClubRepository {
       },
     });
 
-    return !!Club;
+    return !!clubExist;
   }
 
   async joinClubWaiting(clubId: number, userId: number): Promise<void> {
@@ -67,7 +67,7 @@ export class ClubRepository {
       data: {
         clubId,
         userId,
-        status: 'PENDING',
+        status: WaitingStatus.PENDING,
       },
       select: {
         id: true,
