@@ -56,11 +56,7 @@ export class ClubService {
     approve: boolean,
     user: UserBaseInfo,
   ): Promise<void> {
-    const club = await this.clubRepository.getClubById(clubId);
-
-    if (!club) {
-      throw new NotFoundException('Club가 존재하지 않습니다.');
-    }
+    await this.checkLeadPermissionOfClub(clubId, user.id);
 
     const IsUserWaitingClub = await this.clubRepository.isUserWaitingClub(
       clubId,
@@ -70,13 +66,11 @@ export class ClubService {
       throw new ConflictException('해당 유저가 대기중인 클럽이 아닙니다.');
     }
 
-    await this.checkLeadPermissionOfClub(clubId, user.id);
-
-    if (!approve) {
-      await this.clubRepository.rejectClubJoin(clubId, userId);
-    } else {
+    if (approve) {
       await this.clubRepository.approveClubJoin(clubId, userId);
+      return;
     }
+    await this.clubRepository.rejectClubJoin(clubId, userId);
   }
 
   private async checkLeadPermissionOfClub(clubId: number, userId: number) {

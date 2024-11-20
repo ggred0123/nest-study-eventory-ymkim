@@ -67,7 +67,7 @@ export class ClubRepository {
       data: {
         clubId,
         userId,
-        status: 'PENDING',
+        status: WaitingStatus.PENDING,
       },
       select: {
         id: true,
@@ -87,7 +87,7 @@ export class ClubRepository {
           clubId,
           userId,
         },
-        status: 'PENDING',
+        status: WaitingStatus.PENDING,
       },
     });
 
@@ -110,7 +110,7 @@ export class ClubRepository {
           },
         },
         data: {
-          status: 'APPROVED',
+          status: WaitingStatus.APPROVED,
         },
       }),
     ]);
@@ -125,7 +125,7 @@ export class ClubRepository {
         },
       },
       data: {
-        status: 'REJECTED',
+        status: WaitingStatus.REJECTED,
       },
     });
   }
