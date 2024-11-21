@@ -48,7 +48,7 @@ export class EventService {
         '시작 시간이 끝나는 시간보다 늦을 수 없습니다.',
       );
     }
-    if (payload.clubId !== null) {
+    if (payload.clubId) {
       const userInClub = await this.eventRepository.isUserInClub(
         user.id,
         payload.clubId,
