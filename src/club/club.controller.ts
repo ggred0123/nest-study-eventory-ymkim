@@ -28,8 +28,6 @@ import { UserBaseInfo } from 'src/auth/type/user-base-info.type';
 import { CurrentUser } from 'src/auth/decorator/user.decorator';
 import { ApproveClubJoinPayload } from './payload/approve-club-join.payload';
 import { PatchUpdateClubPayload } from './payload/patch-update-club.payload';
-import { ApproveClubJoinPayload } from './payload/approve-club-join.payload';
-import { PatchUpdateClubPayload } from './payload/patch-update-club.payload';
 @Controller('clubs')
 @ApiTags('Club API')
 export class ClubController {
