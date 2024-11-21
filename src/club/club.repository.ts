@@ -30,4 +30,88 @@ export class ClubRepository {
       },
     });
   }
+
+  async getClubById(id: number): Promise<ClubData | null> {
+    return this.prisma.club.findUnique({
+      where: {
+        id: id,
+      },
+      select: {
+        id: true,
+        leadId: true,
+        name: true,
+        description: true,
+        maxPeople: true,
+      },
+    });
+  }
+
+  async isUserJoinedClub(userId: number, clubId: number): Promise<boolean> {
+    const clubExist = await this.prisma.clubJoin.findUnique({
+      where: {
+        clubId_userId: {
+          clubId,
+          userId,
+        },
+        user: {
+          deletedAt: null,
+        },
+      },
+    });
+
+    return !!clubExist;
+  }
+  async isUserWaitingClub(userId: number, clubId: number): Promise<boolean> {
+    const userPending = await this.prisma.clubWaiting.findUnique({
+      where: {
+        clubId_userId: {
+          clubId,
+          userId,
+        },
+        status: WaitingStatus.PENDING,
+        user: {
+          deletedAt: null,
+        },
+      },
+    });
+
+    return !!userPending;
+  }
+  async isUserAlreadyRejected(
+    userId: number,
+    clubId: number,
+  ): Promise<boolean> {
+    const userPending = await this.prisma.clubWaiting.findUnique({
+      where: {
+        clubId_userId: {
+          clubId,
+          userId,
+        },
+        status: WaitingStatus.PENDING,
+        user: {
+          deletedAt: null,
+        },
+      },
+    });
+
+    return !!userPending;
+  }
+
+  async joinClubWaiting(clubId: number, userId: number): Promise<void> {
+    await this.prisma.clubWaiting.create({
+      data: {
+        clubId,
+        userId,
+        status: WaitingStatus.PENDING,
+      },
+      select: {
+        id: true,
+        clubId: true,
+        userId: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  }
 }
