@@ -170,7 +170,7 @@ export class ClubRepository {
       },
       data: {
         name: data.name,
-        leadId: data.leadId ?? undefined,
+        leadId: data.leadId,
         description: data.description,
         maxPeople: data.maxPeople,
       },
