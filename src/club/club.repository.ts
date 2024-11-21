@@ -127,7 +127,6 @@ export class ClubRepository {
       },
       data: {
         status: WaitingStatus.REJECTED,
-
       },
     });
   }
@@ -160,7 +159,6 @@ export class ClubRepository {
         name: true,
         description: true,
         maxPeople: true,
-
       },
     });
   }
