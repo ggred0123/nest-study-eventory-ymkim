@@ -57,22 +57,18 @@ export class ClubController {
     return this.ClubService.joinClub(clubId, user);
   }
 
-  @Post(':clubId/approve')
+  @Post(':/clubId/approve')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: '클럽 참여를 결정합니다.' })
+  @HttpCode(204)
   @ApiNoContentResponse()
   async approveClubJoin(
     @Param('clubId', ParseIntPipe) clubId: number,
     @Body() payload: ApproveClubJoinPayload,
     @CurrentUser() user: UserBaseInfo,
   ): Promise<void> {
-    return this.ClubService.approveClubJoin(
-      clubId,
-      user.id,
-      payload.approve,
-      user,
-    );
+    return this.ClubService.approveClubJoin(clubId, payload, user);
   }
 
   @Patch(':clubId')

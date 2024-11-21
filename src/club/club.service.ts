@@ -12,6 +12,7 @@ import { CreateClubData } from './type/create-club-data.type';
 import { UserBaseInfo } from 'src/auth/type/user-base-info.type';
 import { UpdateClubData } from './type/update-club-data.type';
 import { PatchUpdateClubPayload } from './payload/patch-update-club.payload';
+import { ApproveClubJoinPayload } from './payload/approve-club-join.payload';
 @Injectable()
 export class ClubService {
   constructor(private readonly clubRepository: ClubRepository) {}
@@ -53,31 +54,24 @@ export class ClubService {
 
   async approveClubJoin(
     clubId: number,
-    userId: number,
-    approve: boolean,
+    payload: ApproveClubJoinPayload,
     user: UserBaseInfo,
   ): Promise<void> {
-    const club = await this.clubRepository.getClubById(clubId);
-
-    if (!club) {
-      throw new NotFoundException('Club가 존재하지 않습니다.');
-    }
+    await this.checkLeadPermissionOfClub(clubId, user.id);
 
     const IsUserWaitingClub = await this.clubRepository.isUserWaitingClub(
       clubId,
-      userId,
+      payload.userId,
     );
     if (!IsUserWaitingClub) {
       throw new ConflictException('해당 유저가 대기중인 클럽이 아닙니다.');
     }
 
-    await this.checkLeadPermissionOfClub(clubId, user.id);
-
-    if (!approve) {
-      await this.clubRepository.rejectClubJoin(clubId, userId);
-    } else {
-      await this.clubRepository.approveClubJoin(clubId, userId);
+    if (payload.approve) {
+      await this.clubRepository.approveClubJoin(clubId, payload.userId);
+      return;
     }
+    await this.clubRepository.rejectClubJoin(clubId, payload.userId);
   }
   async patchUpdateClub(
     clubId: number,
