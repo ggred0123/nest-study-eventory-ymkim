@@ -77,6 +77,25 @@ export class ClubRepository {
 
     return !!userPending;
   }
+  async isUserAlreadyRejected(
+    userId: number,
+    clubId: number,
+  ): Promise<boolean> {
+    const userPending = await this.prisma.clubWaiting.findUnique({
+      where: {
+        clubId_userId: {
+          clubId,
+          userId,
+        },
+        status: WaitingStatus.PENDING,
+        user: {
+          deletedAt: null,
+        },
+      },
+    });
+
+    return !!userPending;
+  }
 
   async joinClubWaiting(clubId: number, userId: number): Promise<void> {
     await this.prisma.clubWaiting.create({
