@@ -1,7 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean } from 'class-validator';
+import { IsBoolean, IsInt } from 'class-validator';
 
 export class ApproveClubJoinPayload {
+  @IsInt()
+  @ApiProperty({
+    description: '참가 신청 ID',
+    type: Number,
+  })
+  userId!: number;
+
   @IsBoolean()
   @ApiProperty({
     description: '참가 여부 결정',
