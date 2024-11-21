@@ -101,15 +101,18 @@ export class ClubService {
     if (payload.maxPeople === null) {
       throw new BadRequestException('maxPeople은 null이 될 수 없습니다.');
     }
+    if (payload.leadId === null) {
+      throw new BadRequestException('leadId는 null이 될 수 없습니다.');
+    }
 
     await this.checkLeadPermissionOfClub(clubId, user.id);
 
     if (payload.leadId) {
-      const userInClub = await this.clubRepository.isUserJoinedClub(
+      const checkUserInClub = await this.clubRepository.isUserJoinedClub(
         clubId,
         payload.leadId,
       );
-      if (!userInClub) {
+      if (!checkUserInClub) {
         throw new ConflictException(
           '클럽 리드로 지정된 유저가 클럽에 가입되어 있지 않습니다.',
         );
@@ -118,7 +121,7 @@ export class ClubService {
 
     const updateData: UpdateClubData = {
       name: payload.name,
-      leadId: payload.leadId ?? undefined,
+      leadId: payload.leadId,
       description: payload.description,
       maxPeople: payload.maxPeople,
     };
