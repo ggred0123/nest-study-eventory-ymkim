@@ -10,6 +10,7 @@ import { CreateClubPayload } from './payload/create-club.payload';
 import { ClubDto, ClubListDto } from './dto/club.dto';
 import { CreateClubData } from './type/create-club-data.type';
 import { UserBaseInfo } from 'src/auth/type/user-base-info.type';
+import { ApproveClubJoinPayload } from './payload/approve-club-join.payload';
 
 @Injectable()
 export class ClubService {
@@ -52,25 +53,24 @@ export class ClubService {
 
   async approveClubJoin(
     clubId: number,
-    userId: number,
-    approve: boolean,
+    payload: ApproveClubJoinPayload,
     user: UserBaseInfo,
   ): Promise<void> {
     await this.checkLeadPermissionOfClub(clubId, user.id);
 
     const IsUserWaitingClub = await this.clubRepository.isUserWaitingClub(
       clubId,
-      userId,
+      payload.userId,
     );
     if (!IsUserWaitingClub) {
       throw new ConflictException('해당 유저가 대기중인 클럽이 아닙니다.');
     }
 
-    if (approve) {
-      await this.clubRepository.approveClubJoin(clubId, userId);
+    if (payload.approve) {
+      await this.clubRepository.approveClubJoin(clubId, payload.userId);
       return;
     }
-    await this.clubRepository.rejectClubJoin(clubId, userId);
+    await this.clubRepository.rejectClubJoin(clubId, payload.userId);
   }
 
   private async checkLeadPermissionOfClub(clubId: number, userId: number) {
