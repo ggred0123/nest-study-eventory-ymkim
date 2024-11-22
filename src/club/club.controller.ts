@@ -70,7 +70,6 @@ export class ClubController {
     @CurrentUser() user: UserBaseInfo,
   ): Promise<void> {
     return this.ClubService.approveClubJoin(clubId, payload, user);
-
   }
 
   @Post(':clubId/out')
@@ -83,7 +82,6 @@ export class ClubController {
     @CurrentUser() user: UserBaseInfo,
   ): Promise<void> {
     return this.ClubService.outClub(clubId, user);
-
   }
 
   @Patch(':clubId')

@@ -72,7 +72,6 @@ export class ClubService {
       clubId,
     );
 
-
     if (!isUserJoinedClub) {
       throw new ConflictException('해당 유저가 참가하지 않은 클럽입니다.');
     }
@@ -81,7 +80,6 @@ export class ClubService {
     if (!club) {
       throw new NotFoundException('Club가 존재하지 않습니다.');
     }
-
 
     if (club.leadId === user.id) {
       throw new ConflictException('lead는 클럽에서 나갈 수 없습니다.');
