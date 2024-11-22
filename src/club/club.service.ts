@@ -13,6 +13,7 @@ import { UserBaseInfo } from 'src/auth/type/user-base-info.type';
 import { ApproveClubJoinPayload } from './payload/approve-club-join.payload';
 import { UpdateClubData } from './type/update-club-data.type';
 import { PatchUpdateClubPayload } from './payload/patch-update-club.payload';
+import { ApproveClubJoinPayload } from './payload/approve-club-join.payload';
 @Injectable()
 export class ClubService {
   constructor(private readonly clubRepository: ClubRepository) {}
@@ -71,6 +72,7 @@ export class ClubService {
       clubId,
     );
 
+
     if (!isUserJoinedClub) {
       throw new ConflictException('해당 유저가 참가하지 않은 클럽입니다.');
     }
@@ -79,6 +81,7 @@ export class ClubService {
     if (!club) {
       throw new NotFoundException('Club가 존재하지 않습니다.');
     }
+
 
     if (club.leadId === user.id) {
       throw new ConflictException('lead는 클럽에서 나갈 수 없습니다.');
