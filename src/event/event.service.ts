@@ -115,6 +115,17 @@ export class EventService {
     if (event.endTime < new Date()) {
       throw new ConflictException('이미 시작된 이벤트는 참가할 수 없습니다.');
     }
+    if (event.club) {
+      const isUserJoinedClub = await this.eventRepository.isUserInClub(
+        user.id,
+        event.club.id,
+      );
+      if (!isUserJoinedClub) {
+        throw new ConflictException(
+          '해당 유저가 참가하지 않은 클럽에서 만들어진 모임입니다.',
+        );
+      }
+    }
 
     const currentPeople = await this.eventRepository.getEventJoinCount(eventId);
 

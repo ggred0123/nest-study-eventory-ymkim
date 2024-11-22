@@ -31,6 +31,105 @@ export class ClubRepository {
       },
     });
   }
+  async outEvent(eventId: number, userId: number): Promise<void> {
+    await this.prisma.eventJoin.delete({
+      where: {
+        eventId_userId: {
+          eventId,
+          userId,
+        },
+      },
+    });
+  }
+  async getMyEvents(userId: number): Promise<EventData[]> {
+    return this.prisma.event.findMany({
+      where: {
+        eventJoin: {
+          some: {
+            userId: userId,
+          },
+        },
+      },
+      select: {
+        id: true,
+        hostId: true,
+        title: true,
+        description: true,
+        categoryId: true,
+        eventCity: {
+          select: {
+            id: true,
+            cityId: true,
+          },
+        },
+        club: {
+          select: {
+            id: true,
+          },
+        },
+        startTime: true,
+        endTime: true,
+        maxPeople: true,
+      },
+    });
+  }
+  async deleteEvent(eventId: number): Promise<void> {
+    await this.prisma.$transaction([
+      this.prisma.eventJoin.deleteMany({
+        where: {
+          eventId: eventId,
+        },
+      }),
+      this.prisma.eventCity.deleteMany({
+        where: {
+          eventId: eventId,
+        },
+      }),
+      this.prisma.event.delete({
+        where: {
+          id: eventId,
+        },
+      }),
+    ]);
+  }
+  async outClub(clubId: number, userId: number): Promise<void> {
+    await this.prisma.clubJoin.delete({
+      where: {
+        clubId_userId: {
+          clubId,
+          userId,
+        },
+      },
+    });
+  }
+  async getEventByEventId(eventId: number): Promise<EventData | null> {
+    return this.prisma.event.findUnique({
+      where: {
+        id: eventId,
+      },
+      select: {
+        id: true,
+        hostId: true,
+        title: true,
+        description: true,
+        categoryId: true,
+        eventCity: {
+          select: {
+            id: true,
+            cityId: true,
+          },
+        },
+        club: {
+          select: {
+            id: true,
+          },
+        },
+        startTime: true,
+        endTime: true,
+        maxPeople: true,
+      },
+    });
+  }
 
   async getClubById(id: number): Promise<ClubData | null> {
     return this.prisma.club.findUnique({
@@ -114,20 +213,6 @@ export class ClubRepository {
         updatedAt: true,
       },
     });
-  }
-
-  async isUserWaitingClub(clubId: number, userId: number): Promise<boolean> {
-    const clubWaiting = await this.prisma.clubWaiting.findUnique({
-      where: {
-        clubId_userId: {
-          clubId,
-          userId,
-        },
-        status: WaitingStatus.PENDING,
-      },
-    });
-
-    return !!clubWaiting;
   }
 
   async approveClubJoin(clubId: number, userId: number): Promise<void> {
