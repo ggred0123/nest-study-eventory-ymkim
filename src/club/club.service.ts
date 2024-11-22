@@ -65,6 +65,41 @@ export class ClubService {
 
     await this.clubRepository.joinClubWaiting(clubId, user.id);
   }
+  async outClub(clubId: number, user: UserBaseInfo): Promise<void> {
+    const isUserJoinedClub = await this.clubRepository.isUserJoinedClub(
+      user.id,
+      clubId,
+    );
+
+    if (!isUserJoinedClub) {
+      throw new ConflictException('해당 유저가 참가하지 않은 클럽입니다.');
+    }
+
+    const club = await this.clubRepository.getClubById(clubId);
+    if (!club) {
+      throw new NotFoundException('Club가 존재하지 않습니다.');
+    }
+
+    if (club.leadId === user.id) {
+      throw new ConflictException('lead는 클럽에서 나갈 수 없습니다.');
+    }
+
+    /*const events = await this.clubRepository.getMyEvents(user.id);
+    for (let i = 0; i < events.length; i++) {
+      if (events[i].club && events[i].club?.id === clubId) {
+        await this.outOrDeleteEvent(events[i].id, user.id);
+      }
+    }*/
+
+    await this.clubRepository.outClub(clubId, user.id);
+  }
+
+  /* async outOrDeleteEvent(eventId: number, userId: number): Promise<void> {
+    const event = await this.clubRepository.getEventByEventId(eventId);
+    if (event?.hostId === userId) {
+      await this.clubRepository.deleteEvent(eventId);
+    } else await this.clubRepository.outEvent(eventId, userId);
+  }*/
 
   async approveClubJoin(
     clubId: number,
