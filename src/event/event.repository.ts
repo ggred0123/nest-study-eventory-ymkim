@@ -44,13 +44,17 @@ export class EventRepository {
             cityId: true,
           },
         },
+        club: {
+          select: {
+            id: true,
+          },
+        },
         startTime: true,
         endTime: true,
         maxPeople: true,
       },
     });
   }
-
   async getMyEvents(userId: number): Promise<EventData[]> {
     return this.prisma.event.findMany({
       where: {
@@ -70,6 +74,11 @@ export class EventRepository {
           select: {
             id: true,
             cityId: true,
+          },
+        },
+        club: {
+          select: {
+            id: true,
           },
         },
         startTime: true,
@@ -122,6 +131,21 @@ export class EventRepository {
     });
 
     return !!event;
+  }
+  async isUserInClub(userId: number, clubId: number): Promise<boolean> {
+    const userInClub = await this.prisma.clubJoin.findUnique({
+      where: {
+        clubId_userId: {
+          clubId,
+          userId,
+        },
+        user: {
+          deletedAt: null,
+        },
+      },
+    });
+
+    return !!userInClub;
   }
 
   async isUserJoinedEvent(userId: number, eventId: number): Promise<boolean> {
@@ -205,6 +229,11 @@ export class EventRepository {
             cityId: true,
           },
         },
+        club: {
+          select: {
+            id: true,
+          },
+        },
         startTime: true,
         endTime: true,
         maxPeople: true,
@@ -229,6 +258,11 @@ export class EventRepository {
           select: {
             id: true,
             cityId: true,
+          },
+        },
+        club: {
+          select: {
+            id: true,
           },
         },
         startTime: true,
@@ -276,6 +310,11 @@ export class EventRepository {
           select: {
             id: true,
             cityId: true,
+          },
+        },
+        club: {
+          select: {
+            id: true,
           },
         },
         startTime: true,
