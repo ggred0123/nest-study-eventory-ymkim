@@ -193,7 +193,6 @@ export class ClubRepository {
         },
       },
     });
-
     return !!userPending;
   }
 
