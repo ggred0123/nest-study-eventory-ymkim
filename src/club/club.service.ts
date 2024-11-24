@@ -10,7 +10,6 @@ import { CreateClubPayload } from './payload/create-club.payload';
 import { ClubDto, ClubListDto } from './dto/club.dto';
 import { CreateClubData } from './type/create-club-data.type';
 import { UserBaseInfo } from 'src/auth/type/user-base-info.type';
-import { ApproveClubJoinPayload } from './payload/approve-club-join.payload';
 import { UpdateClubData } from './type/update-club-data.type';
 import { PatchUpdateClubPayload } from './payload/patch-update-club.payload';
 
