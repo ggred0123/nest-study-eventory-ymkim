@@ -31,7 +31,7 @@ import { PatchUpdateClubPayload } from './payload/patch-update-club.payload';
 @Controller('clubs')
 @ApiTags('Club API')
 export class ClubController {
-  constructor(private readonly ClubService: ClubService) {}
+  constructor(private readonly clubService: ClubService) {}
 
   @Post()
   @UseGuards(JwtAuthGuard)
@@ -42,7 +42,7 @@ export class ClubController {
     @Body() payload: CreateClubPayload,
     @CurrentUser() user: UserBaseInfo,
   ): Promise<ClubDto> {
-    return this.ClubService.createClub(payload, user);
+    return this.clubService.createClub(payload, user);
   }
 
   @Post(':clubId/join')
@@ -54,7 +54,7 @@ export class ClubController {
     @Param('clubId', ParseIntPipe) clubId: number,
     @CurrentUser() user: UserBaseInfo,
   ): Promise<void> {
-    return this.ClubService.joinClub(clubId, user);
+    return this.clubService.joinClub(clubId, user);
   }
 
   @Post(':/clubId/approve')
@@ -68,7 +68,7 @@ export class ClubController {
     @Body() payload: ApproveClubJoinPayload,
     @CurrentUser() user: UserBaseInfo,
   ): Promise<void> {
-    return this.ClubService.approveClubJoin(clubId, payload, user);
+    return this.clubService.approveClubJoin(clubId, payload, user);
   }
 
   @Patch(':clubId')
@@ -81,7 +81,7 @@ export class ClubController {
     @Body() payload: PatchUpdateClubPayload,
     @CurrentUser() user: UserBaseInfo,
   ): Promise<ClubDto> {
-    return this.ClubService.patchUpdateClub(clubId, payload, user);
+    return this.clubService.patchUpdateClub(clubId, payload, user);
   }
 
   @Patch(':clubId')
