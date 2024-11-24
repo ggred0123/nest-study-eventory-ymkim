@@ -21,6 +21,7 @@ export class EventRepository {
         startTime: data.startTime,
         endTime: data.endTime,
         maxPeople: data.maxPeople,
+        clubId: data.clubId,
         eventJoin: {
           create: {
             userId: data.hostId,
@@ -38,6 +39,7 @@ export class EventRepository {
         title: true,
         description: true,
         categoryId: true,
+        clubId: true,
         eventCity: {
           select: {
             id: true,
