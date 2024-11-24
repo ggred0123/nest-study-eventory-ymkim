@@ -81,7 +81,7 @@ export class ClubController {
     @Param('clubId', ParseIntPipe) clubId: number,
     @CurrentUser() user: UserBaseInfo,
   ): Promise<void> {
-    return this.ClubService.outClub(clubId, user);
+    return this.clubService.outClub(clubId, user);
   }
 
   @Patch(':clubId')
