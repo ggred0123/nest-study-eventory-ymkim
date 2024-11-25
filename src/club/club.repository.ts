@@ -93,15 +93,24 @@ export class ClubRepository {
     ]);
   }
   async outClub(clubId: number, userId: number): Promise<void> {
-    await this.prisma.clubJoin.delete({
-      where: {
-        clubId_userId: {
-          clubId,
-          userId,
+    const events = await this.getMyEvents(userId);
+    const now = new Date();
+    await this.prisma.$transaction(async (tx) => {
+      for (const event of events) {
+        if (event.startTime < now) {
+          await this.outOrDeleteEvent(event, userId);
+        }
+      }
+      await tx.clubJoin.delete({
+        where: {
+          clubId_userId: {
+            clubId,
+            userId,
+          },
         },
-      },
+      });
     });
-  }
+  } // orm transaction 사용 참고
   async getEventByEventId(eventId: number): Promise<EventData | null> {
     return this.prisma.event.findUnique({
       where: {
