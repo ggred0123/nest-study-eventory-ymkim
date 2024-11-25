@@ -116,12 +116,10 @@ export class ClubRepository {
 
   async outClub(clubId: number, userId: number): Promise<void> {
     const myEvents = await this.getMyEvents(userId);
-    const outevents = filter(
-      myEvents,
+    const outevents = myEvents.filter(
       (event) => event.hostId !== userId && event.startTime < new Date(),
     );
-    const deletedEvents = filter(
-      myEvents,
+    const deletedEvents = myEvents.filter(
       (event) => event.hostId === userId && event.startTime < new Date(),
     );
     const outeventsId = outevents.map((event) => event.id);
