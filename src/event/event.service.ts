@@ -54,11 +54,9 @@ export class EventService {
         payload.clubId,
       );
       if (!userInClub) {
-
         throw new ForbiddenException(
           '클럽 모임은 클럽원만 개설할 수 있습니다.',
         );
-
       }
     }
 
