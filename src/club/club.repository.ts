@@ -131,18 +131,6 @@ export class ClubRepository {
     });
   }
 
-  async checkEventStartedAndDeleteOrOut(
-    events: EventData[],
-    userId: number,
-  ): Promise<void> {
-    const now = new Date();
-    for (const event of events) {
-      if (event.startTime < now) {
-        await this.outOrDeleteEvent(event, userId);
-      }
-    }
-  }
-
   async outOrDeleteEvent(event: EventData, userId: number): Promise<void> {
     if (event?.hostId === userId) {
       await this.deleteEvent(event.id);
