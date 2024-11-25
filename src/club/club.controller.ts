@@ -26,7 +26,7 @@ import { CreateClubPayload } from './payload/create-club.payload';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { UserBaseInfo } from 'src/auth/type/user-base-info.type';
 import { CurrentUser } from 'src/auth/decorator/user.decorator';
-
+import { ApproveClubJoinPayload } from './payload/approve-club-join.payload';
 @Controller('clubs')
 @ApiTags('Club API')
 export class ClubController {
@@ -54,5 +54,19 @@ export class ClubController {
     @CurrentUser() user: UserBaseInfo,
   ): Promise<void> {
     return this.ClubService.joinClub(clubId, user);
+  }
+
+  @Post(':/clubId/approve')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '클럽 참여를 결정합니다.' })
+  @HttpCode(204)
+  @ApiNoContentResponse()
+  async decideClubJoin(
+    @Param('clubId', ParseIntPipe) clubId: number,
+    @Body() payload: ApproveClubJoinPayload,
+    @CurrentUser() user: UserBaseInfo,
+  ): Promise<void> {
+    return this.ClubService.approveClubJoin(clubId, payload, user);
   }
 }

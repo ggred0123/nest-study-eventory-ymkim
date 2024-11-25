@@ -9,7 +9,7 @@ import { ReviewModule } from '../review/review.module';
 import { EventModule } from 'src/event/event.module';
 import { UserModule } from '../user/user.module';
 import { AuthModule } from '../auth/auth.module';
-import { ClubModule } from '../club/club.module';
+import { ClubModule } from 'src/club/club.module';
 
 @Module({
   imports: [

@@ -114,4 +114,40 @@ export class ClubRepository {
       },
     });
   }
+
+  async approveClubJoin(clubId: number, userId: number): Promise<void> {
+    await this.prisma.$transaction([
+      this.prisma.clubJoin.create({
+        data: {
+          clubId,
+          userId,
+        },
+      }),
+      this.prisma.clubWaiting.update({
+        where: {
+          clubId_userId: {
+            clubId,
+            userId,
+          },
+        },
+        data: {
+          status: WaitingStatus.APPROVED,
+        },
+      }),
+    ]);
+  }
+
+  async rejectClubJoin(clubId: number, userId: number): Promise<void> {
+    await this.prisma.clubWaiting.update({
+      where: {
+        clubId_userId: {
+          clubId,
+          userId,
+        },
+      },
+      data: {
+        status: WaitingStatus.REJECTED,
+      },
+    });
+  }
 }
