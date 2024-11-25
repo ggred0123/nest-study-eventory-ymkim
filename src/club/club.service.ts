@@ -83,22 +83,11 @@ export class ClubService {
       throw new ConflictException('lead는 클럽에서 나갈 수 없습니다.');
     }
 
-    /*const events = await this.clubRepository.getMyEvents(user.id);
-    for (let i = 0; i < events.length; i++) {
-      if (events[i].club && events[i].club?.id === clubId) {
-        await this.outOrDeleteEvent(events[i].id, user.id);
-      }
-    }*/
+    const events = await this.clubRepository.getMyEvents(user.id);
+    await this.clubRepository.checkEventStartedAndDeleteOrOut(events, user.id);
 
     await this.clubRepository.outClub(clubId, user.id);
   }
-
-  /* async outOrDeleteEvent(eventId: number, userId: number): Promise<void> {
-    const event = await this.clubRepository.getEventByEventId(eventId);
-    if (event?.hostId === userId) {
-      await this.clubRepository.deleteEvent(eventId);
-    } else await this.clubRepository.outEvent(eventId, userId);
-  }*/
 
   async approveClubJoin(
     clubId: number,
