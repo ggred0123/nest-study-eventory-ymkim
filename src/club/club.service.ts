@@ -84,15 +84,6 @@ export class ClubService {
       throw new ConflictException('lead는 클럽에서 나갈 수 없습니다.');
     }
 
-    const events = await this.clubRepository.getMyEvents(user.id);
-    const now = new Date();
-
-    for (const event of events) {
-      if (event.startTime < now) {
-        await this.clubRepository.outOrDeleteEvent(event, user.id);
-      }
-    }
-
     await this.clubRepository.outClub(clubId, user.id);
   }
 
