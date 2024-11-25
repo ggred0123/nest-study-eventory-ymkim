@@ -28,6 +28,7 @@ import { UserBaseInfo } from 'src/auth/type/user-base-info.type';
 import { CurrentUser } from 'src/auth/decorator/user.decorator';
 import { ApproveClubJoinPayload } from './payload/approve-club-join.payload';
 import { PatchUpdateClubPayload } from './payload/patch-update-club.payload';
+
 @Controller('clubs')
 @ApiTags('Club API')
 export class ClubController {
@@ -69,6 +70,18 @@ export class ClubController {
     @CurrentUser() user: UserBaseInfo,
   ): Promise<void> {
     return this.clubService.approveClubJoin(clubId, payload, user);
+  }
+
+  @Post(':clubId/out')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '유저가 club에서 나갑니다.' })
+  @ApiNoContentResponse()
+  async outClub(
+    @Param('clubId', ParseIntPipe) clubId: number,
+    @CurrentUser() user: UserBaseInfo,
+  ): Promise<void> {
+    return this.clubService.outClub(clubId, user);
   }
 
   @Patch(':clubId')
