@@ -12,6 +12,7 @@ import { CreateClubData } from './type/create-club-data.type';
 import { UserBaseInfo } from 'src/auth/type/user-base-info.type';
 import { UpdateClubData } from './type/update-club-data.type';
 import { PatchUpdateClubPayload } from './payload/patch-update-club.payload';
+import { ApproveClubJoinPayload } from './payload/approve-club-join.payload';
 @Injectable()
 export class ClubService {
   constructor(private readonly clubRepository: ClubRepository) {}
