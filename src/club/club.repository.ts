@@ -131,6 +131,24 @@ export class ClubRepository {
     });
   }
 
+  async checkEventStartedAndDeleteOrOut(
+    events: EventData[],
+    userId: number,
+  ): Promise<void> {
+    const now = new Date();
+    for (const event of events) {
+      if (event.startTime < now) {
+        await this.outOrDeleteEvent(event, userId);
+      }
+    }
+  }
+
+  async outOrDeleteEvent(event: EventData, userId: number): Promise<void> {
+    if (event?.hostId === userId) {
+      await this.deleteEvent(event.id);
+    } else await this.outEvent(event.id, userId);
+  }
+
   async getClubById(id: number): Promise<ClubData | null> {
     return this.prisma.club.findUnique({
       where: {
