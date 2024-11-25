@@ -151,6 +151,7 @@ export class ClubRepository {
       },
     });
   }
+
   async getClubJoinCount(clubId: number): Promise<number> {
     return this.prisma.clubJoin.count({
       where: {
@@ -182,5 +183,4 @@ export class ClubRepository {
       },
     });
   }
-
- 
+}
