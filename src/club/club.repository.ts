@@ -115,20 +115,6 @@ export class ClubRepository {
     });
   }
 
-  async isUserWaitingClub(clubId: number, userId: number): Promise<boolean> {
-    const clubWaiting = await this.prisma.clubWaiting.findUnique({
-      where: {
-        clubId_userId: {
-          clubId,
-          userId,
-        },
-        status: WaitingStatus.PENDING,
-      },
-    });
-
-    return !!clubWaiting;
-  }
-
   async approveClubJoin(clubId: number, userId: number): Promise<void> {
     await this.prisma.$transaction([
       this.prisma.clubJoin.create({
