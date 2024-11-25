@@ -2,9 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/services/prisma.service';
 import { CreateClubData } from './type/create-club-data.type';
 import { ClubData } from './type/club-data.type';
-import { User, Club, ClubJoin, WaitingStatus, Prisma } from '@prisma/client';
+import {
+  User,
+  Club,
+  ClubJoin,
+  WaitingStatus,
+  Prisma,
+  PrismaPromise,
+} from '@prisma/client';
 import { EventData } from 'src/event/type/event-data.type';
 import { UpdateClubData } from './type/update-club-data.type';
+import { filter } from 'lodash';
 @Injectable()
 export class ClubRepository {
   constructor(private readonly prisma: PrismaService) {}
@@ -31,19 +39,17 @@ export class ClubRepository {
       },
     });
   }
-  async outEvent(
-    events: EventData[],
-    userId: number,
-    tx: Prisma.TransactionClient,
-  ): Promise<void> {
-    await tx.eventJoin.deleteMany({
-      where: {
-        eventId: {
-          in: events.map((event) => event.id),
+  outEvent(eventsId: number[], userId: number) {
+    return [
+      this.prisma.eventJoin.deleteMany({
+        where: {
+          eventId: {
+            in: eventsId,
+          },
+          userId: userId,
         },
-        userId: userId,
-      },
-    });
+      }),
+    ];
   }
 
   async getMyEvents(userId: number): Promise<EventData[]> {
@@ -78,124 +84,61 @@ export class ClubRepository {
       },
     });
   }
-  async getShouldDeletedEvents(userId: number): Promise<EventData[]> {
-    return this.prisma.event.findMany({
-      where: {
-        eventJoin: {
-          some: {
-            userId: userId,
+
+  deleteEvent(eventsId: number[]) {
+    if (eventsId.length === 0) {
+      return [];
+    }
+    return [
+      this.prisma.eventJoin.deleteMany({
+        where: {
+          eventId: {
+            in: eventsId,
           },
         },
-        hostId: userId,
-        startTime: {
-          lt: new Date(),
-        },
-      },
-      select: {
-        id: true,
-        hostId: true,
-        title: true,
-        description: true,
-        categoryId: true,
-        eventCity: {
-          select: {
-            id: true,
-            cityId: true,
+      }),
+      this.prisma.eventCity.deleteMany({
+        where: {
+          eventId: {
+            in: eventsId,
           },
         },
-        club: {
-          select: {
-            id: true,
+      }),
+      this.prisma.event.deleteMany({
+        where: {
+          id: {
+            in: eventsId,
           },
         },
-        startTime: true,
-        endTime: true,
-        maxPeople: true,
-      },
-    });
+      }),
+    ];
   }
 
-  async getShouldOutEvents(userId: number): Promise<EventData[]> {
-    return this.prisma.event.findMany({
-      where: {
-        eventJoin: {
-          some: {
-            userId: userId,
-          },
-        },
-        hostId: {
-          not: userId,
-        },
-        startTime: {
-          lt: new Date(),
-        },
-      },
-      select: {
-        id: true,
-        hostId: true,
-        title: true,
-        description: true,
-        categoryId: true,
-        eventCity: {
-          select: {
-            id: true,
-            cityId: true,
-          },
-        },
-        club: {
-          select: {
-            id: true,
-          },
-        },
-        startTime: true,
-        endTime: true,
-        maxPeople: true,
-      },
-    });
-  }
-  async deleteEvent(
-    events: EventData[],
-    tx: Prisma.TransactionClient,
-  ): Promise<void> {
-    await tx.eventJoin.deleteMany({
-      where: {
-        eventId: {
-          in: events.map((event) => event.id),
-        },
-      },
-    });
-    await tx.eventCity.deleteMany({
-      where: {
-        eventId: {
-          in: events.map((event) => event.id),
-        },
-      },
-    });
-    await tx.event.deleteMany({
-      where: {
-        id: {
-          in: events.map((event) => event.id),
-        },
-      },
-    });
-  }
   async outClub(clubId: number, userId: number): Promise<void> {
-    const outevents = await this.getShouldOutEvents(userId);
-    const deletedEvents = await this.getShouldDeletedEvents(userId);
-    await this.prisma.$transaction(async (tx) => {
-      await this.outEvent(outevents, userId, tx);
+    const myEvents = await this.getMyEvents(userId);
+    const outevents = filter(
+      myEvents,
+      (event) => event.hostId !== userId && event.startTime < new Date(),
+    );
+    const deletedEvents = filter(
+      myEvents,
+      (event) => event.hostId === userId && event.startTime < new Date(),
+    );
+    const outeventsId = outevents.map((event) => event.id);
+    const deletedEventsId = deletedEvents.map((event) => event.id);
 
-      await this.deleteEvent(deletedEvents, tx);
-
-      await this.prisma.clubJoin.delete({
+    await this.prisma.$transaction([
+      ...this.outEvent(outeventsId, userId),
+      ...this.deleteEvent(deletedEventsId),
+      this.prisma.clubJoin.delete({
         where: {
           clubId_userId: {
             clubId,
             userId,
           },
         },
-      });
-    });
+      }),
+    ]);
   }
 
   // orm transaction 사용 참고
