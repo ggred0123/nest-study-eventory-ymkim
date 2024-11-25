@@ -103,6 +103,7 @@ export class ClubRepository {
         clubId,
         userId,
         status: WaitingStatus.PENDING,
+        status: WaitingStatus.PENDING,
       },
       select: {
         id: true,
