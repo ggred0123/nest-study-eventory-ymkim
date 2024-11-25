@@ -54,7 +54,11 @@ export class EventService {
         payload.clubId,
       );
       if (!userInClub) {
-        throw new ForbiddenException('이 클럽에 속해있지 않습니다.');
+
+        throw new ForbiddenException(
+          '클럽 모임은 클럽원만 개설할 수 있습니다.',
+        );
+
       }
     }
 
@@ -62,6 +66,7 @@ export class EventService {
       hostId: user.id,
       title: payload.title,
       description: payload.description,
+      clubId: payload.clubId,
       cityIds: payload.cityIds,
       categoryId: payload.categoryId,
       startTime: payload.startTime,
