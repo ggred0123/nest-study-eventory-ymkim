@@ -4,6 +4,7 @@ import { CreateClubData } from './type/create-club-data.type';
 import { ClubData } from './type/club-data.type';
 import { User, Club, ClubJoin, WaitingStatus } from '@prisma/client';
 import { EventData } from 'src/event/type/event-data.type';
+import { UpdateClubData } from './type/update-club-data.type';
 @Injectable()
 export class ClubRepository {
   constructor(private readonly prisma: PrismaService) {}
@@ -147,6 +148,38 @@ export class ClubRepository {
       },
       data: {
         status: WaitingStatus.REJECTED,
+      },
+    });
+  }
+
+  async getClubJoinCount(clubId: number): Promise<number> {
+    return this.prisma.clubJoin.count({
+      where: {
+        clubId,
+        user: {
+          deletedAt: null,
+        },
+      },
+    });
+  }
+
+  async updateClub(clubId: number, data: UpdateClubData): Promise<ClubData> {
+    return this.prisma.club.update({
+      where: {
+        id: clubId,
+      },
+      data: {
+        name: data.name,
+        leadId: data.leadId,
+        description: data.description,
+        maxPeople: data.maxPeople,
+      },
+      select: {
+        id: true,
+        leadId: true,
+        name: true,
+        description: true,
+        maxPeople: true,
       },
     });
   }
