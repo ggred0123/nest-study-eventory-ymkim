@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/services/prisma.service';
 import { CreateClubData } from './type/create-club-data.type';
 import { ClubData } from './type/club-data.type';
-import { User, Club, ClubJoin, WaitingStatus } from '@prisma/client';
+import { User, Club, ClubJoin, WaitingStatus, Prisma } from '@prisma/client';
 import { EventData } from 'src/event/type/event-data.type';
 import { UpdateClubData } from './type/update-club-data.type';
 @Injectable()
@@ -31,8 +31,12 @@ export class ClubRepository {
       },
     });
   }
-  async outEvent(eventId: number, userId: number): Promise<void> {
-    await this.prisma.eventJoin.delete({
+  async outEvent(
+    eventId: number,
+    userId: number,
+    tx: Prisma.TransactionClient,
+  ): Promise<void> {
+    await tx.eventJoin.delete({
       where: {
         eventId_userId: {
           eventId,
@@ -73,24 +77,25 @@ export class ClubRepository {
       },
     });
   }
-  async deleteEvent(eventId: number): Promise<void> {
-    await this.prisma.$transaction([
-      this.prisma.eventJoin.deleteMany({
-        where: {
-          eventId: eventId,
-        },
-      }),
-      this.prisma.eventCity.deleteMany({
-        where: {
-          eventId: eventId,
-        },
-      }),
-      this.prisma.event.delete({
-        where: {
-          id: eventId,
-        },
-      }),
-    ]);
+  async deleteEvent(
+    eventId: number,
+    tx: Prisma.TransactionClient,
+  ): Promise<void> {
+    await tx.eventJoin.deleteMany({
+      where: {
+        eventId: eventId,
+      },
+    });
+    await tx.eventCity.deleteMany({
+      where: {
+        eventId: eventId,
+      },
+    });
+    await tx.event.delete({
+      where: {
+        id: eventId,
+      },
+    });
   }
   async outClub(clubId: number, userId: number): Promise<void> {
     const events = await this.getMyEvents(userId);
@@ -98,7 +103,9 @@ export class ClubRepository {
     await this.prisma.$transaction(async (tx) => {
       for (const event of events) {
         if (event.startTime < now) {
-          await this.outOrDeleteEvent(event, userId);
+          if (event?.hostId === userId) {
+            await this.deleteEvent(event.id, tx);
+          } else await this.outEvent(event.id, userId, tx);
         }
       }
       await tx.clubJoin.delete({
@@ -138,12 +145,6 @@ export class ClubRepository {
         maxPeople: true,
       },
     });
-  }
-
-  async outOrDeleteEvent(event: EventData, userId: number): Promise<void> {
-    if (event?.hostId === userId) {
-      await this.deleteEvent(event.id);
-    } else await this.outEvent(event.id, userId);
   }
 
   async getClubById(id: number): Promise<ClubData | null> {
