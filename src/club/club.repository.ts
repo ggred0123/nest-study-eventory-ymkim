@@ -13,6 +13,7 @@ import {
 import { EventData } from 'src/event/type/event-data.type';
 import { UpdateClubData } from './type/update-club-data.type';
 import { filter } from 'lodash';
+import { ClubWaitingData } from './type/club-waiting-data.type';
 @Injectable()
 export class ClubRepository {
   constructor(private readonly prisma: PrismaService) {}
@@ -316,6 +317,21 @@ export class ClubRepository {
         name: true,
         description: true,
         maxPeople: true,
+      },
+    });
+  }
+  async getClubWaitingList(clubId: number): Promise<ClubWaitingData[]> {
+    return this.prisma.clubWaiting.findMany({
+      where: {
+        clubId,
+      },
+      select: {
+        id: true,
+        userId: true,
+        clubId: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
   }

@@ -28,6 +28,7 @@ import { UserBaseInfo } from 'src/auth/type/user-base-info.type';
 import { CurrentUser } from 'src/auth/decorator/user.decorator';
 import { ApproveClubJoinPayload } from './payload/approve-club-join.payload';
 import { PatchUpdateClubPayload } from './payload/patch-update-club.payload';
+import { ClubWaitingListDto } from './dto/club-waiting.dto';
 
 @Controller('clubs')
 @ApiTags('Club API')
@@ -44,6 +45,17 @@ export class ClubController {
     @CurrentUser() user: UserBaseInfo,
   ): Promise<ClubDto> {
     return this.clubService.createClub(payload, user);
+  }
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '클럽 웨이팅 리스트를 가져옵니다.' })
+  @ApiOkResponse({ type: ClubWaitingListDto })
+  async getClubWaitingList(
+    @Param('clubId', ParseIntPipe) clubId: number,
+    @CurrentUser() user: UserBaseInfo,
+  ): Promise<ClubWaitingListDto> {
+    return this.clubService.getClubWaitingList(clubId, user);
   }
 
   @Post(':clubId/join')

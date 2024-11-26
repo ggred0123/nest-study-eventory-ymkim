@@ -8,6 +8,7 @@ import {
 import { ClubRepository } from './club.repository';
 import { CreateClubPayload } from './payload/create-club.payload';
 import { ClubDto, ClubListDto } from './dto/club.dto';
+import { ClubWaitingListDto } from './dto/club-waiting.dto';
 import { CreateClubData } from './type/create-club-data.type';
 import { UserBaseInfo } from 'src/auth/type/user-base-info.type';
 import { UpdateClubData } from './type/update-club-data.type';
@@ -31,6 +32,17 @@ export class ClubService {
     const club = await this.clubRepository.createClub(createData);
 
     return ClubDto.from(club);
+  }
+
+  async getClubWaitingList(
+    clubId: number,
+    user: UserBaseInfo,
+  ): Promise<ClubWaitingListDto> {
+    await this.checkLeadPermissionOfClub(clubId, user.id);
+    const clubWaitingList =
+      await this.clubRepository.getClubWaitingList(clubId);
+
+    return ClubWaitingListDto.from(clubWaitingList);
   }
 
   async joinClub(clubId: number, user: UserBaseInfo): Promise<void> {
