@@ -38,7 +38,7 @@ export class ReviewRepository {
       },
     });
   }
-  async getReviewsByeventIds(eventIds: number[]): Promise<ReviewData[]> {
+  async getReviewsByEventIds(eventIds: number[]): Promise<ReviewData[]> {
     return this.prisma.review.findMany({
       where: {
         eventId: {
@@ -56,7 +56,7 @@ export class ReviewRepository {
     });
   }
 
-  async getUserJoinedClubs(userId: number): Promise<number[]> {
+  async getClubIdsOfUser(userId: number): Promise<number[]> {
     const clubs = await this.prisma.clubJoin.findMany({
       where: {
         userId,

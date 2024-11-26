@@ -116,30 +116,29 @@ export class ReviewService {
     reviews: ReviewData[],
     user: UserBaseInfo,
   ): Promise<ReviewData[]> {
-    const eventIds = reviews.map((review) => review.eventId);
+    const eventIds = [...new Set(reviews.map((review) => review.eventId))];
 
-    const events = await this.reviewRepository.getEventsByEventIds(eventIds);
+    const [events, userJoinedClubs] = await Promise.all([
+      this.reviewRepository.getEventsByEventIds(eventIds),
+      this.reviewRepository.getClubIdsOfUser(user.id),
+    ]);
 
-    const userJoinedClubs = await this.reviewRepository.getUserJoinedClubs(
-      user.id,
-    );
+    const reviewToClubMap = new Map<number, number | null>();
 
-    const filteredReviews = reviews.filter((review) => {
+    reviews.forEach((review) => {
       const event = events.find((event) => event.id === review.eventId);
-      if (!event) {
-        return false;
-      }
-
-      if (!event.club) {
-        return true;
-      }
-
-      return userJoinedClubs.includes(event.club.id);
+      reviewToClubMap.set(review.id, event?.club?.id || null);
     });
 
+    const filteredReviews = reviews.filter((review) => {
+      const clubId = reviewToClubMap.get(review.id);
+      if (!clubId) {
+        return true;
+      }
+      return userJoinedClubs.includes(clubId);
+    });
     return filteredReviews;
   }
-
   async putUpdateReview(
     reviewId: number,
     payload: PutUpdateReviewPayload,
