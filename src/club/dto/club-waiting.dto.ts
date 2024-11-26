@@ -23,18 +23,11 @@ export class ClubWaitingDto {
   })
   userId!: number;
 
-  @ApiProperty({
-    description: '현재 상태',
-    enum: WaitingStatus,
-  })
-  status!: WaitingStatus;
-
   static from(clubWaiting: ClubWaitingData): ClubWaitingDto {
     return {
       id: clubWaiting.id,
       clubId: clubWaiting.clubId,
       userId: clubWaiting.userId,
-      status: clubWaiting.status,
     };
   }
 

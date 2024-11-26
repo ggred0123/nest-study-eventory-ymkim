@@ -46,7 +46,7 @@ export class ClubController {
   ): Promise<ClubDto> {
     return this.clubService.createClub(payload, user);
   }
-  @Get()
+  @Get(':clubId/waiting')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: '클럽 웨이팅 리스트를 가져옵니다.' })

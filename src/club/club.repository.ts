@@ -324,14 +324,16 @@ export class ClubRepository {
     return this.prisma.clubWaiting.findMany({
       where: {
         clubId,
+        status: WaitingStatus.PENDING,
+        user: {
+          deletedAt: null,
+        },
       },
       select: {
         id: true,
         userId: true,
         clubId: true,
         status: true,
-        createdAt: true,
-        updatedAt: true,
       },
     });
   }
