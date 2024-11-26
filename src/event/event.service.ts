@@ -14,6 +14,7 @@ import { UpdateEventData } from './type/update-event-data.type';
 import { PatchUpdateEventPayload } from './payload/patch-update-event.payload';
 import { PutUpdateEventPayload } from './payload/put-update-event.payload';
 import { UserBaseInfo } from 'src/auth/type/user-base-info.type';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class EventService {
@@ -83,20 +84,43 @@ export class EventService {
     return EventListDto.from(events);
   }
 
-  async getEventByEventId(eventId: number): Promise<EventDto> {
+  async getEventByEventId(
+    eventId: number,
+    user: UserBaseInfo,
+  ): Promise<EventDto> {
     const event = await this.eventRepository.getEventById(eventId);
 
     if (!event) {
       throw new NotFoundException('event가 존재하지 않습니다.');
     }
+    if (event.club) {
+      const userInClub = await this.eventRepository.isUserInClub(
+        user.id,
+        event.club.id,
+      );
+      if (!userInClub) {
+        throw new ConflictException('해당 유저가 클럽에 가입하지 않았습니다.');
+      }
+    }
 
     return EventDto.from(event);
   }
 
-  async getEvents(query: EventQuery): Promise<EventListDto> {
+  async getEvents(
+    query: EventQuery,
+    user: UserBaseInfo,
+  ): Promise<EventListDto> {
     const events = await this.eventRepository.getEvents(query);
-
-    return EventListDto.from(events);
+    const userJoinedClubs = await this.eventRepository.getClubIdsOfUser(
+      user.id,
+    );
+    const filteredEvents = events.filter((event) => {
+      if (!event.club) {
+        return true;
+      }
+      return userJoinedClubs.includes(event.club.id);
+    });
+    return EventListDto.from(filteredEvents);
   }
 
   async joinEvent(eventId: number, user: UserBaseInfo): Promise<void> {
