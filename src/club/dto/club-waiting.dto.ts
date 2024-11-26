@@ -1,7 +1,4 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ClubData } from '../type/club-data.type';
-import { IsOptional } from 'class-validator';
-import { WaitingStatus } from '@prisma/client';
 import { ClubWaitingData } from 'src/club/type/club-waiting-data.type';
 
 export class ClubWaitingDto {
