@@ -36,6 +36,8 @@ export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: '리뷰를 생성합니다' })
   @ApiCreatedResponse({ type: ReviewDto })
   async createReview(
@@ -46,19 +48,27 @@ export class ReviewController {
   }
 
   @Get(':reviewId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: '리뷰 상세 정보를 가져옵니다' })
   @ApiOkResponse({ type: ReviewDto })
   async getReviewById(
     @Param('reviewId', ParseIntPipe) reviewId: number,
+    @CurrentUser() user: UserBaseInfo,
   ): Promise<ReviewDto> {
-    return this.reviewService.getReviewById(reviewId);
+    return this.reviewService.getReviewById(reviewId, user);
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: '여러 리뷰 정보를 가져옵니다' })
   @ApiOkResponse({ type: ReviewListDto })
-  async getReviews(@Query() query: ReviewQuery): Promise<ReviewListDto> {
-    return this.reviewService.getReviews(query);
+  async getReviews(
+    @Query() query: ReviewQuery,
+    @CurrentUser() user: UserBaseInfo,
+  ): Promise<ReviewListDto> {
+    return this.reviewService.getReviews(query, user);
   }
 
   @Put(':reviewId')
