@@ -28,8 +28,8 @@ export class ClubWaitingDto {
     };
   }
 
-  static fromArray(ClubWaitings: ClubWaitingData[]): ClubWaitingDto[] {
-    return ClubWaitings.map((ClubWaiting) => this.from(ClubWaiting));
+  static fromArray(clubWaitings: ClubWaitingData[]): ClubWaitingDto[] {
+    return clubWaitings.map((clubWaiting) => this.from(clubWaiting));
   }
 }
 export class ClubWaitingListDto {
@@ -37,11 +37,11 @@ export class ClubWaitingListDto {
     description: '클럽 웨이팅 목록',
     type: [ClubWaitingDto],
   })
-  ClubWaitings!: ClubWaitingDto[];
+  clubWaitings!: ClubWaitingDto[];
 
-  static from(ClubWaitings: ClubWaitingData[]): ClubWaitingListDto {
+  static from(clubWaitings: ClubWaitingData[]): ClubWaitingListDto {
     return {
-      ClubWaitings: ClubWaitingDto.fromArray(ClubWaitings),
+      clubWaitings: ClubWaitingDto.fromArray(clubWaitings),
     };
   }
 }
