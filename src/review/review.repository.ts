@@ -60,7 +60,11 @@ export class ReviewRepository {
     const clubs = await this.prisma.clubJoin.findMany({
       where: {
         userId,
+        club: {
+          deletedAt: null,
+        },
       },
+
       select: {
         clubId: true,
       },
@@ -106,37 +110,6 @@ export class ReviewRepository {
       },
     });
   }
-  /*
-  async getEventsIdsInClub(eventIds: number[]): Promise<number[]> {
-    const events = await this.prisma.event.findMany({
-      where: {
-        id: {
-          in: eventIds,
-        },
-        clubId: {
-          not: null,
-        },
-      },
-      select: {
-        id: true,
-      },
-    });
-    return events.map((event) => event.id);
-  }
-  async getEventsIdsNotInClub(eventIds: number[]): Promise<number[]> {
-    const events = await this.prisma.event.findMany({
-      where: {
-        id: {
-          in: eventIds,
-        },
-        clubId: null,
-      },
-      select: {
-        id: true,
-      },
-    });
-    return events.map((event) => event.id);
-  }*/
 
   async isReviewExist(userId: number, eventId: number): Promise<boolean> {
     const review = await this.prisma.review.findUnique({

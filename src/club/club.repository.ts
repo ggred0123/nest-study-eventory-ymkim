@@ -87,7 +87,7 @@ export class ClubRepository {
     });
   }
 
-  deleteEvent(eventsId: number[]) {
+  private deleteEvent(eventsId: number[]) {
     if (eventsId.length === 0) {
       return [];
     }
@@ -174,6 +174,7 @@ export class ClubRepository {
     return this.prisma.club.findUnique({
       where: {
         id: id,
+        deletedAt: null,
       },
       select: {
         id: true,
@@ -208,6 +209,7 @@ export class ClubRepository {
           clubId,
           userId,
         },
+
         status: WaitingStatus.PENDING,
         user: {
           deletedAt: null,
@@ -354,9 +356,12 @@ export class ClubRepository {
           clubId,
         },
       }),
-      this.prisma.club.delete({
+      this.prisma.club.update({
         where: {
           id: clubId,
+        },
+        data: {
+          deletedAt: new Date(),
         },
       }),
     ]);

@@ -141,6 +141,9 @@ export class EventRepository {
           clubId,
           userId,
         },
+        club: {
+          deletedAt: null,
+        },
         user: {
           deletedAt: null,
         },
@@ -277,6 +280,9 @@ export class EventRepository {
     const clubs = await this.prisma.clubJoin.findMany({
       where: {
         userId,
+        club: {
+          deletedAt: null,
+        },
       },
       select: {
         clubId: true,
