@@ -14,7 +14,6 @@ import { UpdateEventData } from './type/update-event-data.type';
 import { PatchUpdateEventPayload } from './payload/patch-update-event.payload';
 import { PutUpdateEventPayload } from './payload/put-update-event.payload';
 import { UserBaseInfo } from 'src/auth/type/user-base-info.type';
-import { User } from '@prisma/client';
 
 @Injectable()
 export class EventService {
