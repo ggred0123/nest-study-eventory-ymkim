@@ -96,7 +96,6 @@ export class ReviewService {
 
     return ReviewDto.from(review);
   }
-  //
 
   async getReviews(
     query: ReviewQuery,
@@ -109,8 +108,7 @@ export class ReviewService {
     );
 
     return ReviewListDto.from(filteredReviews);
-  } // 내가 하고자 하는거.. 이게 보면 리뷰들 중에서도 클럽 안 이벤트가 있고 그렇지 않은게 있을거야냐..
-  //리뷰를 적은 이벤트가 클럽 안에서 만들어진거면 지금 조회를 하고 있는 유저가 그 클럽 안에 속한 사람인지 확인
+  }
 
   async filterEventReviewInUserJoinedClub(
     reviews: ReviewData[],

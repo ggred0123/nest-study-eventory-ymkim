@@ -140,7 +140,6 @@ export class ClubRepository {
     ]);
   }
 
-  // orm transaction 사용 참고
   async getEventByEventId(eventId: number): Promise<EventData | null> {
     return this.prisma.event.findUnique({
       where: {
@@ -200,6 +199,7 @@ export class ClubRepository {
 
     return !!clubExist;
   }
+
   async isUserWaitingClub(userId: number, clubId: number): Promise<boolean> {
     const userPending = await this.prisma.clubWaiting.findUnique({
       where: {
@@ -320,6 +320,7 @@ export class ClubRepository {
       },
     });
   }
+
   async getClubWaitingList(clubId: number): Promise<ClubWaitingData[]> {
     return this.prisma.clubWaiting.findMany({
       where: {
