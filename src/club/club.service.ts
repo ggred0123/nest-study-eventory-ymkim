@@ -174,6 +174,11 @@ export class ClubService {
 
     return ClubDto.from(updatedClub);
   }
+  async deleteClub(clubId: number, user: UserBaseInfo): Promise<void> {
+    await this.checkLeadPermissionOfClub(clubId, user.id);
+
+    await this.clubRepository.deleteClub(clubId);
+  }
 
   private async checkLeadPermissionOfClub(clubId: number, userId: number) {
     const club = await this.clubRepository.getClubById(clubId);

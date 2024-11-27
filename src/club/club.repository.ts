@@ -40,6 +40,7 @@ export class ClubRepository {
       },
     });
   }
+
   outEvent(eventsId: number[], userId: number) {
     return [
       this.prisma.eventJoin.deleteMany({
@@ -335,6 +336,59 @@ export class ClubRepository {
         userId: true,
         clubId: true,
         status: true,
+      },
+    });
+  }
+  async deleteClub(clubId: number): Promise<void> {
+    const notStartedEvents = await this.getClubEventsNotStarted(clubId);
+
+    await this.prisma.$transaction([
+      ...this.deleteEvent(notStartedEvents.map((event) => event.id)),
+      this.prisma.clubJoin.deleteMany({
+        where: {
+          clubId,
+        },
+      }),
+      this.prisma.clubWaiting.deleteMany({
+        where: {
+          clubId,
+        },
+      }),
+      this.prisma.club.delete({
+        where: {
+          id: clubId,
+        },
+      }),
+    ]);
+  }
+  async getClubEventsNotStarted(clubId: number): Promise<EventData[]> {
+    return this.prisma.event.findMany({
+      where: {
+        clubId,
+        startTime: {
+          lt: new Date(),
+        },
+      },
+      select: {
+        id: true,
+        hostId: true,
+        title: true,
+        description: true,
+        categoryId: true,
+        eventCity: {
+          select: {
+            id: true,
+            cityId: true,
+          },
+        },
+        club: {
+          select: {
+            id: true,
+          },
+        },
+        startTime: true,
+        endTime: true,
+        maxPeople: true,
       },
     });
   }
