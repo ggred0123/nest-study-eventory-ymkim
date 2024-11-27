@@ -141,9 +141,6 @@ export class EventRepository {
           clubId,
           userId,
         },
-        club: {
-          deletedAt: null,
-        },
         user: {
           deletedAt: null,
         },
@@ -151,6 +148,16 @@ export class EventRepository {
     });
 
     return !!userInClub;
+  }
+  async isClubExist(clubId: number): Promise<boolean> {
+    const club = await this.prisma.club.findUnique({
+      where: {
+        id: clubId,
+        deletedAt: null,
+      },
+    });
+
+    return !!club;
   }
 
   async isUserJoinedEvent(userId: number, eventId: number): Promise<boolean> {

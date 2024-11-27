@@ -142,6 +142,12 @@ export class EventService {
       throw new ConflictException('이미 시작된 이벤트는 참가할 수 없습니다.');
     }
     if (event.club) {
+      const isClubExist = await this.eventRepository.isClubExist(event.club.id);
+      if (!isClubExist) {
+        throw new NotFoundException(
+          '이미 사라진 클럽에서 만들어진 모임입니다.',
+        );
+      }
       const isUserJoinedClub = await this.eventRepository.isUserInClub(
         user.id,
         event.club.id,
