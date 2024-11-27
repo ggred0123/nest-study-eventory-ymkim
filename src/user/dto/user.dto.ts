@@ -40,6 +40,12 @@ export class UserDto {
   })
   categoryId!: number;
 
+  @ApiProperty({
+    description: '클럽 ID들',
+    type: [Number],
+  })
+  clubIds!: number[];
+
   static from(user: UserData): UserDto {
     return {
       id: user.id,
@@ -48,6 +54,7 @@ export class UserDto {
       birthday: user.birthday,
       cityId: user.cityId,
       categoryId: user.categoryId,
+      clubIds: user.clubJoin.map((club) => club.clubId),
     };
   }
 

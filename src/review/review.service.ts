@@ -84,13 +84,23 @@ export class ReviewService {
     if (!event) {
       throw new InternalServerErrorException('Event가 존재하지 않습니다.');
     }
+
     if (event.clubId) {
-      const userInClub = await this.reviewRepository.isUserJoinedClub(
-        user.id,
-        event.clubId,
-      );
+      const [userInClub, checkUserInDeletedClubEvent, isUserJoinedEvent] =
+        await Promise.all([
+          this.reviewRepository.isUserJoinedClub(user.id, event.clubId),
+          this.reviewRepository.checkStartedEventInDeletedClub(event.id),
+          this.reviewRepository.isUserJoinedEvent(user.id, event.id),
+        ]);
+
       if (!userInClub) {
         throw new ConflictException('해당 유저가 클럽에 가입하지 않았습니다.');
+      }
+
+      if (!isUserJoinedEvent && checkUserInDeletedClubEvent) {
+        throw new ConflictException(
+          '삭제된 클럽에서 진행되었던 이벤트는 참가자만 조회할 수 있습니다.',
+        );
       }
     }
 
@@ -116,25 +126,68 @@ export class ReviewService {
   ): Promise<ReviewData[]> {
     const eventIds = [...new Set(reviews.map((review) => review.eventId))];
 
-    const [events, userJoinedClubs] = await Promise.all([
+    const [events, userJoinedClubs, userDeletedClubs] = await Promise.all([
       this.reviewRepository.getEventsByEventIds(eventIds),
       this.reviewRepository.getClubIdsOfUser(user.id),
+      this.reviewRepository.getDeletedClubIdsOfUser(user.id), // 사용자가 속했던 삭제된 클럽
     ]);
 
-    const reviewToClubMap = new Map<number, number | null>();
+    const now = new Date();
 
+    const deletedStartedEventIds = events
+      .filter(
+        (event) => event.club?.deletedAt !== null && event.startTime < now,
+      )
+      .map((event) => event.id);
+
+    let userJoinedEventIds: number[] = [];
+
+    if (deletedStartedEventIds) {
+      userJoinedEventIds = await this.reviewRepository.getUserJoinedEventIds(
+        user.id,
+        deletedStartedEventIds,
+      );
+    }
+
+    const userJoinedEventIdSet = new Set(userJoinedEventIds); // 삭제된 클럽에서 시작된 이벤트 중 사용자가 참가한 이벤트 ID 집합
+
+    const reviewToClubMap = new Map<
+      number,
+      { clubId: number | null; eventId: number }
+    >();
     reviews.forEach((review) => {
       const event = events.find((event) => event.id === review.eventId);
-      reviewToClubMap.set(review.id, event?.club?.id || null);
+      if (event) {
+        reviewToClubMap.set(review.id, {
+          clubId: event.club?.id || null,
+          eventId: event.id,
+        });
+      }
     });
 
     const filteredReviews = reviews.filter((review) => {
-      const clubId = reviewToClubMap.get(review.id);
+      const clubEventIds = reviewToClubMap.get(review.id);
+      if (!clubEventIds) {
+        return false;
+      }
+
+      const { clubId, eventId } = clubEventIds;
+
       if (!clubId) {
         return true;
       }
+
+      if (userJoinedEventIdSet.has(eventId)) {
+        return true;
+      }
+
+      if (userDeletedClubs.includes(clubId)) {
+        return false;
+      }
+
       return userJoinedClubs.includes(clubId);
     });
+
     return filteredReviews;
   }
   async putUpdateReview(

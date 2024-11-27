@@ -49,6 +49,7 @@ export class EventRepository {
         club: {
           select: {
             id: true,
+            deletedAt: true,
           },
         },
         startTime: true,
@@ -57,6 +58,32 @@ export class EventRepository {
       },
     });
   }
+  async checkStartedEventInDeletedClub(eventId: number): Promise<boolean> {
+    const event = await this.prisma.event.findFirst({
+      where: {
+        id: eventId,
+        startTime: {
+          lt: new Date(),
+        },
+        club: {
+          deletedAt: {
+            not: null,
+          },
+        },
+      },
+      select: {
+        club: {
+          select: {
+            deletedAt: true,
+          },
+        },
+        startTime: true,
+      },
+    });
+
+    return !!event;
+  }
+
   async getMyEvents(userId: number): Promise<EventData[]> {
     return this.prisma.event.findMany({
       where: {
@@ -81,6 +108,7 @@ export class EventRepository {
         club: {
           select: {
             id: true,
+            deletedAt: true,
           },
         },
         startTime: true,
@@ -244,6 +272,7 @@ export class EventRepository {
         club: {
           select: {
             id: true,
+            deletedAt: true,
           },
         },
         startTime: true,
@@ -275,6 +304,7 @@ export class EventRepository {
         club: {
           select: {
             id: true,
+            deletedAt: true,
           },
         },
         startTime: true,
@@ -341,6 +371,7 @@ export class EventRepository {
         club: {
           select: {
             id: true,
+            deletedAt: true,
           },
         },
         startTime: true,

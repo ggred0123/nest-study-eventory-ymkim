@@ -16,8 +16,12 @@ export class UserService {
     if (userId !== user.id) {
       throw new NotFoundException('해당 권한이 없습니다.');
     }
+    const userInfo = await this.userRepository.getUserInfoById(user.id);
+    if (!userInfo) {
+      throw new NotFoundException('해당 유저가 존재하지 않습니다.');
+    }
 
-    return UserDto.from(user);
+    return UserDto.from(userInfo);
   }
   async deleteUser(userId: number, user: UserBaseInfo): Promise<void> {
     if (userId !== user.id) {

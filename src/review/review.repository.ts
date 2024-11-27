@@ -102,6 +102,7 @@ export class ReviewRepository {
         club: {
           select: {
             id: true,
+            deletedAt: true,
           },
         },
         startTime: true,
@@ -224,5 +225,65 @@ export class ReviewRepository {
         id: reviewId,
       },
     });
+  }
+
+  async checkStartedEventInDeletedClub(eventId: number): Promise<boolean> {
+    const event = await this.prisma.event.findFirst({
+      where: {
+        id: eventId,
+        startTime: {
+          lt: new Date(),
+        },
+        club: {
+          deletedAt: {
+            not: null,
+          },
+        },
+      },
+      select: {
+        club: {
+          select: {
+            deletedAt: true,
+          },
+        },
+        startTime: true,
+      },
+    });
+
+    return !!event;
+  }
+  async getUserJoinedEventIds(
+    userId: number,
+    eventIds: number[],
+  ): Promise<number[]> {
+    const eventJoins = await this.prisma.eventJoin.findMany({
+      where: {
+        userId: userId,
+        eventId: { in: eventIds },
+        user: {
+          deletedAt: null,
+        },
+      },
+      select: { eventId: true },
+    });
+    return eventJoins.map((eventJoin) => eventJoin.eventId);
+  }
+
+  async getDeletedClubIdsOfUser(userId: number): Promise<number[]> {
+    const deletedClubs = await this.prisma.clubJoin.findMany({
+      where: {
+        userId: userId,
+        club: {
+          deletedAt: {
+            not: null,
+          },
+        },
+      },
+      select: {
+        clubId: true,
+      },
+    });
+
+    return deletedClubs.map((clubJoin) => clubJoin.clubId);
   }
 }

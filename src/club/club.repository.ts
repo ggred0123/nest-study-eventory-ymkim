@@ -37,6 +37,7 @@ export class ClubRepository {
         name: true,
         description: true,
         maxPeople: true,
+        deletedAt: true,
       },
     });
   }
@@ -78,6 +79,7 @@ export class ClubRepository {
         club: {
           select: {
             id: true,
+            deletedAt: true,
           },
         },
         startTime: true,
@@ -161,6 +163,7 @@ export class ClubRepository {
         club: {
           select: {
             id: true,
+            deletedAt: true,
           },
         },
         startTime: true,
@@ -342,10 +345,10 @@ export class ClubRepository {
     });
   }
   async deleteClub(clubId: number): Promise<void> {
-    const notStartedEvents = await this.getClubEventsNotStarted(clubId);
+    const events = await this.getClubEvents(clubId);
 
     await this.prisma.$transaction([
-      ...this.deleteEvent(notStartedEvents.map((event) => event.id)),
+      ...this.deleteEvent(events.map((event) => event.id)),
       this.prisma.clubJoin.deleteMany({
         where: {
           clubId,
@@ -366,13 +369,10 @@ export class ClubRepository {
       }),
     ]);
   }
-  async getClubEventsNotStarted(clubId: number): Promise<EventData[]> {
+  async getClubEvents(clubId: number): Promise<EventData[]> {
     return this.prisma.event.findMany({
       where: {
         clubId,
-        startTime: {
-          lt: new Date(),
-        },
       },
       select: {
         id: true,
@@ -389,6 +389,7 @@ export class ClubRepository {
         club: {
           select: {
             id: true,
+            deletedAt: true,
           },
         },
         startTime: true,
