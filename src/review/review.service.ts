@@ -164,7 +164,7 @@ export class ReviewService {
           deletedAt: event.club.deletedAt,
         });
       }
-    });
+    }); //이벤트 클럽 맵
 
     const reviewToEventMap = new Map<number, EventData>();
     for (const review of reviews) {
@@ -173,7 +173,7 @@ export class ReviewService {
         throw new InternalServerErrorException('Event가 존재하지 않습니다.');
       }
       reviewToEventMap.set(review.id, event);
-    }
+    } //리뷰 이벤트 맵
 
     const filteredReviews = reviews.filter((review) => {
       const event = reviewToEventMap.get(review.id);
