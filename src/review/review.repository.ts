@@ -6,6 +6,7 @@ import { User, Event } from '@prisma/client';
 import { ReviewQuery } from './query/review.query';
 import { UpdateReviewData } from './type/update-review-data.type';
 import { EventData } from 'src/event/type/event-data.type';
+import { ClubData } from 'src/club/type/club-data.type';
 @Injectable()
 export class ReviewRepository {
   constructor(private readonly prisma: PrismaService) {}
@@ -252,6 +253,24 @@ export class ReviewRepository {
     });
   }
 
+  async getClubByClubId(clubId: number): Promise<boolean> {
+    const clubExist = this.prisma.club.findUnique({
+      where: {
+        id: clubId,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        name: true,
+        leadId: true,
+        description: true,
+        maxPeople: true,
+        deletedAt: true,
+      },
+    });
+    return !!clubExist;
+  }
+
   async checkStartedEventInDeletedClub(eventId: number): Promise<boolean> {
     const event = await this.prisma.event.findFirst({
       where: {
@@ -292,23 +311,5 @@ export class ReviewRepository {
       select: { eventId: true },
     });
     return eventJoins.map((eventJoin) => eventJoin.eventId);
-  }
-
-  async getDeletedClubIdsOfUser(userId: number): Promise<number[]> {
-    const deletedClubs = await this.prisma.clubJoin.findMany({
-      where: {
-        userId: userId,
-        club: {
-          deletedAt: {
-            not: null,
-          },
-        },
-      },
-      select: {
-        clubId: true,
-      },
-    });
-
-    return deletedClubs.map((clubJoin) => clubJoin.clubId);
   }
 }

@@ -102,7 +102,7 @@ export class EventService {
         ],
       );
 
-      if (!userInClub) {
+      if (!userInClub && checkClubExist) {
         throw new ConflictException('해당 유저가 클럽에 가입하지 않았습니다.');
       }
 
