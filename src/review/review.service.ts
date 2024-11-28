@@ -157,7 +157,7 @@ export class ReviewService {
       number,
       { clubId: number; deletedAt: Date | null }
     >();
-    events.forEach((event) => {
+    events.forEach(async (event) => {
       if (event.club) {
         eventClubMap.set(event.id, {
           clubId: event.club.id,
@@ -167,13 +167,13 @@ export class ReviewService {
     }); //이벤트 클럽 맵
 
     const reviewToEventMap = new Map<number, EventData>();
-    for (const review of reviews) {
+    reviews.forEach(async (review) => {
       const event = await this.reviewRepository.getEventById(review.eventId);
       if (!event) {
         throw new InternalServerErrorException('Event가 존재하지 않습니다.');
       }
       reviewToEventMap.set(review.id, event);
-    } //리뷰 이벤트 맵
+    }); //리뷰 이벤트 맵
 
     const filteredReviews = reviews.filter((review) => {
       const event = reviewToEventMap.get(review.id);

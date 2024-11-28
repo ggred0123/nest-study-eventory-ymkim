@@ -314,6 +314,35 @@ export class EventRepository {
       },
     });
   }
+  async getEventsOfUser(userId: number): Promise<EventData[]> {
+    return this.prisma.event.findMany({
+      where: {
+        hostId: userId,
+      },
+      select: {
+        id: true,
+        hostId: true,
+        title: true,
+        description: true,
+        categoryId: true,
+        eventCity: {
+          select: {
+            id: true,
+            cityId: true,
+          },
+        },
+        club: {
+          select: {
+            id: true,
+            deletedAt: true,
+          },
+        },
+        startTime: true,
+        endTime: true,
+        maxPeople: true,
+      },
+    });
+  }
   async getClubIdsOfUser(userId: number): Promise<number[]> {
     const clubs = await this.prisma.clubJoin.findMany({
       where: {

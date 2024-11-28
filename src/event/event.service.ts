@@ -115,7 +115,9 @@ export class EventService {
 
     return EventDto.from(event);
   }
-
+  // 생각해보면 얘도 클럽이 삭제 된 경우에는 그 이벤트에 참여한 사람만 볼 수있고..
+  // 클럽이 삭제 되지 않은 경우에는 클럽에 가입한 사람만 볼 수 있어야함
+  //애초에 클럽에 속해있지 않으면 누구나 볼 수있고..
   async getEvents(
     query: EventQuery,
     user: UserBaseInfo,
@@ -124,11 +126,18 @@ export class EventService {
     const userJoinedClubs = await this.eventRepository.getClubIdsOfUser(
       user.id,
     );
+    const userJoinedEvents = await this.eventRepository.getEventsOfUser(
+      user.id,
+    );
     const filteredEvents = events.filter((event) => {
       if (!event.club) {
         return true;
       }
-      return userJoinedClubs.includes(event.club.id);
+      if (!event.club.deletedAt) {
+        return userJoinedClubs.includes(event.club.id);
+      }
+
+      return userJoinedEvents.includes(event);
     });
     return EventListDto.from(filteredEvents);
   }
