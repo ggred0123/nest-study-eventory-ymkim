@@ -72,10 +72,35 @@ export class ReviewRepository {
     return clubs.map((club) => club.clubId);
   }
 
-  async getEventById(eventId: number): Promise<Event | null> {
+  async getEventById(eventId: number): Promise<EventData | null> {
     return this.prisma.event.findUnique({
       where: {
         id: eventId,
+      },
+      select: {
+        id: true,
+        hostId: true,
+        title: true,
+        description: true,
+        categoryId: true,
+        clubId: true,
+        createdAt: true,
+        updatedAt: true,
+        eventCity: {
+          select: {
+            id: true,
+            cityId: true,
+          },
+        },
+        club: {
+          select: {
+            id: true,
+            deletedAt: true,
+          },
+        },
+        startTime: true,
+        endTime: true,
+        maxPeople: true,
       },
     });
   }

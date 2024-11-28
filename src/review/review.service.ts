@@ -16,6 +16,8 @@ import { PatchUpdateReviewPayload } from './payload/patch-update-review.payload'
 import { UserBaseInfo } from '../auth/type/user-base-info.type';
 import { ReviewData } from './type/review-data.type';
 import { filter } from 'lodash';
+import { date } from 'joi';
+import { EventData } from 'src/event/type/event-data.type';
 
 @Injectable()
 export class ReviewService {
@@ -85,10 +87,10 @@ export class ReviewService {
       throw new InternalServerErrorException('Event가 존재하지 않습니다.');
     }
 
-    if (event.clubId) {
+    if (event.club) {
       const [userInClub, checkUserInDeletedClubEvent, isUserJoinedEvent] =
         await Promise.all([
-          this.reviewRepository.isUserJoinedClub(user.id, event.clubId),
+          this.reviewRepository.isUserJoinedClub(user.id, event.club.id),
           this.reviewRepository.checkStartedEventInDeletedClub(event.id),
           this.reviewRepository.isUserJoinedEvent(user.id, event.id),
         ]);
@@ -151,37 +153,48 @@ export class ReviewService {
 
     const userJoinedEventIdSet = new Set(userJoinedEventIds); // 삭제된 클럽에서 시작된 이벤트 중 사용자가 참가한 이벤트 ID 집합
 
-    const reviewToClubMap = new Map<
+    const eventClubMap = new Map<
       number,
-      { clubId: number | null; eventId: number }
+      { clubId: number; deletedAt: Date | null }
     >();
-    reviews.forEach((review) => {
-      const event = events.find((event) => event.id === review.eventId);
-      if (event) {
-        reviewToClubMap.set(review.id, {
-          clubId: event.club?.id || null,
-          eventId: event.id,
+    events.forEach((event) => {
+      if (event.club) {
+        eventClubMap.set(event.id, {
+          clubId: event.club.id,
+          deletedAt: event.club.deletedAt,
         });
       }
     });
 
-    const filteredReviews = reviews.filter((review) => {
-      const clubEventIds = reviewToClubMap.get(review.id);
-      if (!clubEventIds) {
-        return false;
+    const reviewToEventMap = new Map<number, EventData>();
+    for (const review of reviews) {
+      const event = await this.reviewRepository.getEventById(review.eventId);
+      if (!event) {
+        throw new InternalServerErrorException('Event가 존재하지 않습니다.');
       }
+      reviewToEventMap.set(review.id, event);
+    }
 
-      const { clubId, eventId } = clubEventIds;
+    const filteredReviews = reviews.filter((review) => {
+      const event = reviewToEventMap.get(review.id);
+      if (!event) {
+        throw new InternalServerErrorException(
+          '리뷰에 해당하는 이벤트가 없습니다.',
+        );
+      }
+      const club = eventClubMap.get(event.id);
+      const { clubId, deletedAt } = club ?? { clubId: null, deletedAt: null };
 
       if (!clubId) {
         return true;
-      }
-
-      if (userJoinedEventIdSet.has(eventId)) {
+      } // 클럽이 없는 경우
+      // 이제 클럽이 있으면 삭제된 경우에는 사용자가 참가한 이벤트인지를 확인해야하고
+      //삭제 안됐으면 클럽안에 있는지만 확인
+      if (!deletedAt && userJoinedEventIdSet.has(event.id)) {
         return true;
       }
 
-      if (userDeletedClubs.includes(clubId)) {
+      if (!deletedAt && !userJoinedEventIdSet.has(event.id)) {
         return false;
       }
 

@@ -93,19 +93,20 @@ export class EventService {
       throw new NotFoundException('event가 존재하지 않습니다.');
     }
 
-    if (event?.club) {
-      const [userInClub, checkUserInDeletedClubEvent, isUserJoinedEvent] =
-        await Promise.all([
+    if (event.club) {
+      const [userInClub, checkClubExist, isUserJoinedEvent] = await Promise.all(
+        [
           this.eventRepository.isUserInClub(user.id, event.club.id),
-          this.eventRepository.checkStartedEventInDeletedClub(eventId),
+          this.eventRepository.getClubByClubId(eventId),
           this.eventRepository.isUserJoinedEvent(user.id, eventId),
-        ]);
+        ],
+      );
 
       if (!userInClub) {
         throw new ConflictException('해당 유저가 클럽에 가입하지 않았습니다.');
       }
 
-      if (!isUserJoinedEvent && checkUserInDeletedClubEvent) {
+      if (!isUserJoinedEvent && !checkClubExist) {
         throw new ConflictException(
           '삭제된 클럽에서 진행되었던 이벤트는 참가자만 조회할 수 있습니다.',
         );

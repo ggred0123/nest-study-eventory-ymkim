@@ -6,6 +6,7 @@ import { User, Event, Category, City, EventJoin } from '@prisma/client';
 import { EventQuery } from './query/event.query';
 import { UpdateEventData } from './type/update-event-data.type';
 import { UserBaseInfo } from 'src/auth/type/user-base-info.type';
+import { ClubData } from 'src/club/type/club-data.type';
 
 @Injectable()
 export class EventRepository {
@@ -410,5 +411,20 @@ export class EventRepository {
         },
       }),
     ]);
+  }
+  async getClubByClubId(clubId: number): Promise<ClubData | null> {
+    return this.prisma.club.findUnique({
+      where: {
+        id: clubId,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        leadId: true,
+        name: true,
+        description: true,
+        maxPeople: true,
+      },
+    });
   }
 }
