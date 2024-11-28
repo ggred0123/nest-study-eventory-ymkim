@@ -154,7 +154,7 @@ export class ReviewService {
     const reviewToEventMap = new Map<number, EventData>();
 
     reviews.forEach(async (review) => {
-      const event = await this.reviewRepository.getEventById(review.eventId);
+      const event = events.find((event) => event.id === review.eventId);
       if (!event) {
         throw new InternalServerErrorException('Event가 존재하지 않습니다.');
       }
