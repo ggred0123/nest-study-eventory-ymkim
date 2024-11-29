@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -12,17 +13,16 @@ import { EventQuery } from './query/event.query';
 import { UpdateEventData } from './type/update-event-data.type';
 import { PatchUpdateEventPayload } from './payload/patch-update-event.payload';
 import { PutUpdateEventPayload } from './payload/put-update-event.payload';
+import { UserBaseInfo } from 'src/auth/type/user-base-info.type';
 
 @Injectable()
 export class EventService {
   constructor(private readonly eventRepository: EventRepository) {}
 
-  async createEvent(payload: CreateEventPayload): Promise<EventDto> {
-    const user = await this.eventRepository.getUserById(payload.hostId);
-    if (!user) {
-      throw new NotFoundException('host가 존재하지 않습니다.');
-    }
-
+  async createEvent(
+    payload: CreateEventPayload,
+    user: UserBaseInfo,
+  ): Promise<EventDto> {
     const category = await this.eventRepository.getCategoryById(
       payload.categoryId,
     );
@@ -48,11 +48,23 @@ export class EventService {
         '시작 시간이 끝나는 시간보다 늦을 수 없습니다.',
       );
     }
+    if (payload.clubId) {
+      const userInClub = await this.eventRepository.isUserInClub(
+        user.id,
+        payload.clubId,
+      );
+      if (!userInClub) {
+        throw new ForbiddenException(
+          '클럽 모임은 클럽원만 개설할 수 있습니다.',
+        );
+      }
+    }
 
     const createData: CreateEventData = {
-      hostId: payload.hostId,
+      hostId: user.id,
       title: payload.title,
       description: payload.description,
+      clubId: payload.clubId,
       cityIds: payload.cityIds,
       categoryId: payload.categoryId,
       startTime: payload.startTime,
@@ -65,32 +77,76 @@ export class EventService {
     return EventDto.from(event);
   }
 
-  async getEventByEventId(eventId: number): Promise<EventDto> {
+  async getMyEvents(user: UserBaseInfo): Promise<EventListDto> {
+    const events = await this.eventRepository.getMyEvents(user.id);
+
+    return EventListDto.from(events);
+  }
+
+  async getEventByEventId(
+    eventId: number,
+    user: UserBaseInfo,
+  ): Promise<EventDto> {
     const event = await this.eventRepository.getEventById(eventId);
 
     if (!event) {
       throw new NotFoundException('event가 존재하지 않습니다.');
     }
 
+    if (event.club) {
+      const [userInClub, checkClubExist, isUserJoinedEvent] = await Promise.all(
+        [
+          this.eventRepository.isUserInClub(user.id, event.club.id),
+          this.eventRepository.getClubByClubId(eventId),
+          this.eventRepository.isUserJoinedEvent(user.id, eventId),
+        ],
+      );
+
+      if (!userInClub && checkClubExist) {
+        throw new ConflictException('해당 유저가 클럽에 가입하지 않았습니다.');
+      }
+
+      if (!isUserJoinedEvent && !checkClubExist) {
+        throw new ConflictException(
+          '삭제된 클럽에서 진행되었던 이벤트는 참가자만 조회할 수 있습니다.',
+        );
+      }
+    }
+
     return EventDto.from(event);
   }
-
-  async getEvents(query: EventQuery): Promise<EventListDto> {
+  // 생각해보면 얘도 클럽이 삭제 된 경우에는 그 이벤트에 참여한 사람만 볼 수있고..
+  // 클럽이 삭제 되지 않은 경우에는 클럽에 가입한 사람만 볼 수 있어야함
+  //애초에 클럽에 속해있지 않으면 누구나 볼 수있고..
+  async getEvents(
+    query: EventQuery,
+    user: UserBaseInfo,
+  ): Promise<EventListDto> {
     const events = await this.eventRepository.getEvents(query);
+    const userJoinedClubs = await this.eventRepository.getClubIdsOfUser(
+      user.id,
+    );
+    const userJoinedEvents = await this.eventRepository.getEventsOfUser(
+      user.id,
+    );
+    const filteredEvents = events.filter((event) => {
+      if (!event.club) {
+        return true;
+      }
+      if (!event.club.deletedAt) {
+        return userJoinedClubs.includes(event.club.id);
+      }
 
-    return EventListDto.from(events);
+      return userJoinedEvents.includes(event);
+    });
+    return EventListDto.from(filteredEvents);
   }
 
-  async joinEvent(eventId: number, userId: number): Promise<void> {
+  async joinEvent(eventId: number, user: UserBaseInfo): Promise<void> {
     const isUserJoinedEvent = await this.eventRepository.isUserJoinedEvent(
-      userId,
+      user.id,
       eventId,
     );
-    const user = await this.eventRepository.getUserById(userId);
-
-    if (!user) {
-      throw new NotFoundException('존재하지 않는 user입니다.');
-    }
 
     if (isUserJoinedEvent) {
       throw new ConflictException('해당 유저가 이미 참가한 이벤트입니다.');
@@ -105,6 +161,23 @@ export class EventService {
     if (event.endTime < new Date()) {
       throw new ConflictException('이미 시작된 이벤트는 참가할 수 없습니다.');
     }
+    if (event?.club) {
+      const isClubExist = await this.eventRepository.isClubExist(event.club.id);
+      if (!isClubExist) {
+        throw new NotFoundException(
+          '이미 사라진 클럽에서 만들어진 모임입니다.',
+        );
+      }
+      const isUserJoinedClub = await this.eventRepository.isUserInClub(
+        user.id,
+        event.club.id,
+      );
+      if (!isUserJoinedClub) {
+        throw new ConflictException(
+          '해당 유저가 참가하지 않은 클럽에서 만들어진 모임입니다.',
+        );
+      }
+    }
 
     const currentPeople = await this.eventRepository.getEventJoinCount(eventId);
 
@@ -112,19 +185,14 @@ export class EventService {
       throw new ConflictException('이미 정원이 다 찼습니다.');
     }
 
-    await this.eventRepository.joinEvent(eventId, userId);
+    await this.eventRepository.joinEvent(eventId, user.id);
   }
 
-  async outEvent(eventId: number, userId: number): Promise<void> {
+  async outEvent(eventId: number, user: UserBaseInfo): Promise<void> {
     const isUserJoinedEvent = await this.eventRepository.isUserJoinedEvent(
-      userId,
+      user.id,
       eventId,
     );
-    const user = await this.eventRepository.getUserById(userId);
-
-    if (!user) {
-      throw new NotFoundException('존재하지 않는 user입니다.');
-    }
 
     if (!isUserJoinedEvent) {
       throw new ConflictException('해당 유저가 참가하지 않은 이벤트입니다.');
@@ -135,7 +203,7 @@ export class EventService {
       throw new NotFoundException('Event가 존재하지 않습니다.');
     }
 
-    if (event.hostId === userId) {
+    if (event.hostId === user.id) {
       throw new ConflictException('host는 이벤트에서 나갈 수 없습니다.');
     }
 
@@ -143,12 +211,13 @@ export class EventService {
       throw new ConflictException('이미 시작된 이벤트는 나갈 수 없습니다.');
     }
 
-    await this.eventRepository.outEvent(eventId, userId);
+    await this.eventRepository.outEvent(eventId, user.id);
   }
 
   async putUpdateEvent(
     eventId: number,
     payload: PutUpdateEventPayload,
+    user: UserBaseInfo,
   ): Promise<EventDto> {
     const event = await this.eventRepository.getEventById(eventId);
 
@@ -205,6 +274,8 @@ export class EventService {
       );
     }
 
+    await this.checkHostPermissionOfEvent(eventId, user.id);
+
     const updatedEvent = await this.eventRepository.updateEvent(
       eventId,
       updateData,
@@ -216,6 +287,7 @@ export class EventService {
   async patchUpdateEvent(
     eventId: number,
     payload: PatchUpdateEventPayload,
+    user: UserBaseInfo,
   ): Promise<EventDto> {
     if (payload.title === null) {
       throw new BadRequestException('title은 null이 될 수 없습니다.');
@@ -238,6 +310,8 @@ export class EventService {
     if (payload.maxPeople === null) {
       throw new BadRequestException('maxPeople은 null이 될 수 없습니다.');
     }
+
+    await this.checkHostPermissionOfEvent(eventId, user.id);
 
     const event = await this.eventRepository.getEventById(eventId);
 
@@ -322,7 +396,7 @@ export class EventService {
     return EventDto.from(updatedEvent);
   }
 
-  async deleteEvent(eventId: number): Promise<void> {
+  async deleteEvent(eventId: number, user: UserBaseInfo): Promise<void> {
     const event = await this.eventRepository.getEventById(eventId);
 
     if (!event) {
@@ -333,6 +407,20 @@ export class EventService {
       throw new ConflictException('이미 시작된 이벤트는 삭제할 수 없습니다.');
     }
 
+    await this.checkHostPermissionOfEvent(eventId, user.id);
+
     await this.eventRepository.deleteEvent(eventId);
+  }
+
+  private async checkHostPermissionOfEvent(eventId: number, userId: number) {
+    const event = await this.eventRepository.getEventById(eventId);
+
+    if (!event) {
+      throw new NotFoundException('Event가 존재하지 않습니다.');
+    }
+
+    if (event.hostId !== userId) {
+      throw new ForbiddenException('호스트가 아닙니다!');
+    }
   }
 }

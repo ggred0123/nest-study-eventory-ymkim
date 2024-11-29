@@ -26,9 +26,12 @@ model User {
   updatedAt    DateTime  @updatedAt @map("updated_at")
   deletedAt    DateTime? @map("deleted_at")
 
-  event     Event[]
-  eventJoin EventJoin[]
-  review    Review[]
+  event       Event[]
+  eventJoin   EventJoin[]
+  review      Review[]
+  club        Club[]
+  clubJoin    ClubJoin[]
+  clubWaiting ClubWaiting[]
 
   city     City?    @relation(fields: [cityId], references: [id])
   category Category @relation(fields: [categoryId], references: [id])
@@ -52,6 +55,7 @@ model Event {
   id          Int      @id @default(autoincrement())
   hostId      Int      @map("host_id")
   categoryId  Int      @map("category_id")
+  clubId      Int?     @map("club_id")
   title       String
   description String
   maxPeople   Int      @map("max_people")
@@ -62,6 +66,7 @@ model Event {
 
   host     User     @relation(fields: [hostId], references: [id])
   category Category @relation(fields: [categoryId], references: [id])
+  club     Club?    @relation(fields: [clubId], references: [id])
 
   eventJoin EventJoin[]
   eventCity EventCity[]
@@ -73,7 +78,7 @@ model Event {
 model EventCity {
   id        Int      @id @default(autoincrement())
   eventId   Int      @map("event_id")
-  cityId      Int      @map("city_id")
+  cityId    Int      @map("city_id")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -115,6 +120,60 @@ model Review {
   @@map("review")
 }
 
+model Club {
+  id          Int      @id @default(autoincrement())
+  leadId      Int      @map("lead_id")
+  name        String
+  description String
+  maxPeople   Int      @map("max_people")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  lead User @relation(fields: [leadId], references: [id])
+
+  clubJoin    ClubJoin[]
+  clubWaiting ClubWaiting[]
+  event       Event[]
+
+  @@map("club")
+}
+
+enum WaitingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model ClubWaiting {
+  id        Int           @id @default(autoincrement())
+  clubId    Int           @map("club_id")
+  userId    Int           @map("user_id")
+  status    WaitingStatus
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  club Club @relation(fields: [clubId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([clubId, userId])
+  @@map("club_waiting")
+}
+
+model ClubJoin {
+  id        Int      @id @default(autoincrement())
+  clubId    Int      @map("club_id")
+  userId    Int      @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  club Club @relation(fields: [clubId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([clubId, userId])
+  @@map("club_join")
+}
+
 model Region {
   id        Int      @id @default(autoincrement())
   name      String
@@ -134,7 +193,7 @@ model City {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   eventCity EventCity[]
-  user  User[]
+  user      User[]
 
   region Region @relation(fields: [regionId], references: [id])
 

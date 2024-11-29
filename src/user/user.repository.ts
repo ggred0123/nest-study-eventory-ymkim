@@ -1,6 +1,9 @@
 import { PrismaService } from '../common/services/prisma.service';
 import { Injectable } from '@nestjs/common';
 import { User } from '@prisma/client';
+import { UserData } from './type/user-data.type';
+import { UserBaseInfo } from 'src/auth/type/user-base-info.type';
+import { UpdateUserData } from './type/update-user-data.type';
 
 @Injectable()
 export class UserRepository {
@@ -15,6 +18,38 @@ export class UserRepository {
     });
   }
 
+  async isEmailUnique(email: string): Promise<boolean> {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email: email,
+      },
+    });
+
+    return user === null;
+  }
+
+  async getUserInfoById(userId: number): Promise<UserData | null> {
+    return this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        birthday: true,
+        cityId: true,
+        categoryId: true,
+        clubJoin: {
+          select: {
+            id: true,
+            clubId: true,
+          },
+        },
+      },
+    });
+  }
+
   async deleteUser(userId: number): Promise<void> {
     await this.prisma.user.update({
       where: {
@@ -22,6 +57,35 @@ export class UserRepository {
       },
       data: {
         deletedAt: new Date(),
+      },
+    });
+  }
+
+  async updateUser(userId: number, data: UpdateUserData): Promise<UserData> {
+    return this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        email: data.email,
+        name: data.name,
+        birthday: data.birthday,
+        cityId: data.cityId,
+        categoryId: data.categoryId,
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        birthday: true,
+        cityId: true,
+        categoryId: true,
+        clubJoin: {
+          select: {
+            id: true,
+            clubId: true,
+          },
+        },
       },
     });
   }

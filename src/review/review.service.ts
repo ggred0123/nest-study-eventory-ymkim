@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { ReviewRepository } from './review.repository';
@@ -14,6 +15,9 @@ import { PutUpdateReviewPayload } from './payload/put-update-review.payload';
 import { PatchUpdateReviewPayload } from './payload/patch-update-review.payload';
 import { UserBaseInfo } from '../auth/type/user-base-info.type';
 import { ReviewData } from './type/review-data.type';
+import { filter } from 'lodash';
+import { date } from 'joi';
+import { EventData } from 'src/event/type/event-data.type';
 
 @Injectable()
 export class ReviewService {
@@ -69,22 +73,115 @@ export class ReviewService {
     return ReviewDto.from(review);
   }
 
-  async getReviewById(reviewId: number): Promise<ReviewDto> {
+  async getReviewById(
+    reviewId: number,
+    user: UserBaseInfo,
+  ): Promise<ReviewDto> {
     const review = await this.reviewRepository.getReviewById(reviewId);
 
     if (!review) {
       throw new NotFoundException('Review가 존재하지 않습니다.');
     }
+    const event = await this.reviewRepository.getEventById(review.eventId);
+    if (!event) {
+      throw new InternalServerErrorException('Event가 존재하지 않습니다.');
+    }
+
+    if (event.club) {
+      const [userInClub, clubExist, isUserJoinedEvent] = await Promise.all([
+        this.reviewRepository.isUserJoinedClub(user.id, event.club.id),
+        this.reviewRepository.getClubByClubId(event.club.id),
+        this.reviewRepository.isUserJoinedEvent(user.id, event.id),
+      ]);
+
+      if (!userInClub && clubExist) {
+        throw new ConflictException('해당 유저가 클럽에 가입하지 않았습니다.');
+      }
+
+      if (!isUserJoinedEvent && !clubExist) {
+        throw new ConflictException(
+          '삭제된 클럽에서 진행되었던 이벤트는 참가자만 조회할 수 있습니다.',
+        );
+      }
+    }
 
     return ReviewDto.from(review);
   }
 
-  async getReviews(query: ReviewQuery): Promise<ReviewListDto> {
+  async getReviews(
+    query: ReviewQuery,
+    user: UserBaseInfo,
+  ): Promise<ReviewListDto> {
     const reviews = await this.reviewRepository.getReviews(query);
+    const filteredReviews = await this.filterEventReviewInUserJoinedClub(
+      reviews,
+      user,
+    );
 
-    return ReviewListDto.from(reviews);
+    return ReviewListDto.from(filteredReviews);
   }
 
+  async filterEventReviewInUserJoinedClub(
+    reviews: ReviewData[],
+    user: UserBaseInfo,
+  ): Promise<ReviewData[]> {
+    const eventIds = [...new Set(reviews.map((review) => review.eventId))];
+
+    const [events, userJoinedClubs] = await Promise.all([
+      this.reviewRepository.getEventsByEventIds(eventIds),
+      this.reviewRepository.getClubIdsOfUser(user.id),
+    ]);
+
+    const now = new Date();
+
+    const deletedStartedEventIds = events
+      .filter(
+        (event) => event.club?.deletedAt !== null && event.startTime < now,
+      )
+      .map((event) => event.id);
+
+    let userJoinedEventIds: number[] = [];
+
+    if (deletedStartedEventIds) {
+      userJoinedEventIds = await this.reviewRepository.getUserJoinedEventIds(
+        user.id,
+        deletedStartedEventIds,
+      );
+    }
+
+    const userJoinedEventIdSet = new Set(userJoinedEventIds); // 삭제된 클럽에서 시작된 이벤트 중 사용자가 참가한 이벤트 ID 집합
+
+    const reviewToEventMap = new Map<number, EventData>();
+
+    reviews.forEach(async (review) => {
+      const event = events.find((event) => event.id === review.eventId);
+      if (!event) {
+        throw new InternalServerErrorException('Event가 존재하지 않습니다.');
+      }
+      reviewToEventMap.set(review.id, event);
+    }); //리뷰 이벤트 맵
+
+    const filteredReviews = reviews.filter((review) => {
+      const event = reviewToEventMap.get(review.id);
+      if (!event) {
+        throw new InternalServerErrorException(
+          '리뷰에 해당하는 이벤트가 없습니다.',
+        );
+      }
+
+      if (!event.club) {
+        return true;
+      } // 클럽이 없는 경우
+      // 이제 클럽이 있으면 삭제된 경우에는 사용자가 참가한 이벤트인지를 확인해야하고
+      //삭제 안됐으면 클럽안에 있는지만 확인
+      if (!event.club.deletedAt) {
+        return userJoinedClubs.includes(event.club.id);
+      }
+      return userJoinedEventIdSet.has(event.id);
+    });
+
+    return filteredReviews;
+  }
   async putUpdateReview(
     reviewId: number,
     payload: PutUpdateReviewPayload,
@@ -149,6 +246,11 @@ export class ReviewService {
 
     if (!review) {
       throw new NotFoundException('Review가 존재하지 않습니다.');
+    }
+
+    const event = await this.reviewRepository.getEventById(review.eventId);
+    if (!event) {
+      throw new NotFoundException('Event가 존재하지 않습니다.');
     }
 
     if (review.userId !== userId) {

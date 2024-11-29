@@ -11,4 +11,8 @@ export type EventData = {
     id: number;
     cityId: number;
   }[];
+  club: {
+    id: number;
+    deletedAt: Date | null;
+  } | null;
 };
