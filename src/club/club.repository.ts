@@ -37,9 +37,11 @@ export class ClubRepository {
         name: true,
         description: true,
         maxPeople: true,
+        deletedAt: true,
       },
     });
   }
+
   outEvent(eventsId: number[], userId: number) {
     return [
       this.prisma.eventJoin.deleteMany({
@@ -77,6 +79,7 @@ export class ClubRepository {
         club: {
           select: {
             id: true,
+            deletedAt: true,
           },
         },
         startTime: true,
@@ -86,7 +89,7 @@ export class ClubRepository {
     });
   }
 
-  deleteEvent(eventsId: number[]) {
+  private deleteEvent(eventsId: number[]) {
     if (eventsId.length === 0) {
       return [];
     }
@@ -160,6 +163,7 @@ export class ClubRepository {
         club: {
           select: {
             id: true,
+            deletedAt: true,
           },
         },
         startTime: true,
@@ -173,6 +177,7 @@ export class ClubRepository {
     return this.prisma.club.findUnique({
       where: {
         id: id,
+        deletedAt: null,
       },
       select: {
         id: true,
@@ -207,6 +212,7 @@ export class ClubRepository {
           clubId,
           userId,
         },
+
         status: WaitingStatus.PENDING,
         user: {
           deletedAt: null,
@@ -335,6 +341,60 @@ export class ClubRepository {
         userId: true,
         clubId: true,
         status: true,
+      },
+    });
+  }
+  async deleteClub(clubId: number): Promise<void> {
+    const events = await this.getClubEvents(clubId);
+
+    await this.prisma.$transaction([
+      ...this.deleteEvent(events.map((event) => event.id)),
+      this.prisma.clubJoin.deleteMany({
+        where: {
+          clubId,
+        },
+      }),
+      this.prisma.clubWaiting.deleteMany({
+        where: {
+          clubId,
+        },
+      }),
+      this.prisma.club.update({
+        where: {
+          id: clubId,
+        },
+        data: {
+          deletedAt: new Date(),
+        },
+      }),
+    ]);
+  }
+  async getClubEvents(clubId: number): Promise<EventData[]> {
+    return this.prisma.event.findMany({
+      where: {
+        clubId,
+      },
+      select: {
+        id: true,
+        hostId: true,
+        title: true,
+        description: true,
+        categoryId: true,
+        eventCity: {
+          select: {
+            id: true,
+            cityId: true,
+          },
+        },
+        club: {
+          select: {
+            id: true,
+            deletedAt: true,
+          },
+        },
+        startTime: true,
+        endTime: true,
+        maxPeople: true,
       },
     });
   }

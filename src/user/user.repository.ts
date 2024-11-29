@@ -40,6 +40,12 @@ export class UserRepository {
         birthday: true,
         cityId: true,
         categoryId: true,
+        clubJoin: {
+          select: {
+            id: true,
+            clubId: true,
+          },
+        },
       },
     });
   }
@@ -74,6 +80,12 @@ export class UserRepository {
         birthday: true,
         cityId: true,
         categoryId: true,
+        clubJoin: {
+          select: {
+            id: true,
+            clubId: true,
+          },
+        },
       },
     });
   }

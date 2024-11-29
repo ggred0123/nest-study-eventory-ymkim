@@ -92,19 +92,32 @@ export class EventService {
     if (!event) {
       throw new NotFoundException('event가 존재하지 않습니다.');
     }
+
     if (event.club) {
-      const userInClub = await this.eventRepository.isUserInClub(
-        user.id,
-        event.club.id,
+      const [userInClub, checkClubExist, isUserJoinedEvent] = await Promise.all(
+        [
+          this.eventRepository.isUserInClub(user.id, event.club.id),
+          this.eventRepository.getClubByClubId(eventId),
+          this.eventRepository.isUserJoinedEvent(user.id, eventId),
+        ],
       );
-      if (!userInClub) {
+
+      if (!userInClub && checkClubExist) {
         throw new ConflictException('해당 유저가 클럽에 가입하지 않았습니다.');
+      }
+
+      if (!isUserJoinedEvent && !checkClubExist) {
+        throw new ConflictException(
+          '삭제된 클럽에서 진행되었던 이벤트는 참가자만 조회할 수 있습니다.',
+        );
       }
     }
 
     return EventDto.from(event);
   }
-
+  // 생각해보면 얘도 클럽이 삭제 된 경우에는 그 이벤트에 참여한 사람만 볼 수있고..
+  // 클럽이 삭제 되지 않은 경우에는 클럽에 가입한 사람만 볼 수 있어야함
+  //애초에 클럽에 속해있지 않으면 누구나 볼 수있고..
   async getEvents(
     query: EventQuery,
     user: UserBaseInfo,
@@ -113,11 +126,18 @@ export class EventService {
     const userJoinedClubs = await this.eventRepository.getClubIdsOfUser(
       user.id,
     );
+    const userJoinedEvents = await this.eventRepository.getEventsOfUser(
+      user.id,
+    );
     const filteredEvents = events.filter((event) => {
       if (!event.club) {
         return true;
       }
-      return userJoinedClubs.includes(event.club.id);
+      if (!event.club.deletedAt) {
+        return userJoinedClubs.includes(event.club.id);
+      }
+
+      return userJoinedEvents.includes(event);
     });
     return EventListDto.from(filteredEvents);
   }
@@ -141,7 +161,13 @@ export class EventService {
     if (event.endTime < new Date()) {
       throw new ConflictException('이미 시작된 이벤트는 참가할 수 없습니다.');
     }
-    if (event.club) {
+    if (event?.club) {
+      const isClubExist = await this.eventRepository.isClubExist(event.club.id);
+      if (!isClubExist) {
+        throw new NotFoundException(
+          '이미 사라진 클럽에서 만들어진 모임입니다.',
+        );
+      }
       const isUserJoinedClub = await this.eventRepository.isUserInClub(
         user.id,
         event.club.id,
